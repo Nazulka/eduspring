@@ -1,6 +1,8 @@
 package com.lms.eduspring.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -15,6 +17,7 @@ public class User {
     @Column(nullable = false, unique = true, length = 50)
     private String username;
 
+    @Getter
     @Column(nullable = false)
     private String passwordHash;
 
@@ -47,6 +50,15 @@ public class User {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
+
+    public void setPasswordHash(String encode) {
+        this.passwordHash = passwordHash;
+    }
+
+    public String getUsername() {
+        return "";
+    }
+
 
     // --- Getters & Setters ---
     // (generate via IDE for all fields)

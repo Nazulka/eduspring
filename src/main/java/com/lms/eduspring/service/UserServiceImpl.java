@@ -20,6 +20,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void registerUser(User user) {
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            throw new IllegalArgumentException("Username already taken");
+        }
         // hash password before saving
         user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
         userRepository.save(user);
