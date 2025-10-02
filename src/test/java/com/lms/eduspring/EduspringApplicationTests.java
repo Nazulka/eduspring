@@ -8,6 +8,7 @@ class EduspringApplicationTests {
 
 	@Test
 	void contextLoads() {
+
 	}
 
 }
