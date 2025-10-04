@@ -2,22 +2,24 @@ package com.lms.eduspring.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "users")
+@Getter
+@Setter
 public class User {
 
     @Id
     @GeneratedValue
-    private UUID id; // safer than Long
+    private UUID id; // primary key, auto-generated
 
     @Column(nullable = false, unique = true, length = 50)
     private String username;
 
-    @Getter
     @Column(nullable = false)
     private String passwordHash;
 
@@ -37,7 +39,9 @@ public class User {
     private LocalDateTime updatedAt;
 
     // --- Constructors ---
-    public User() {}
+    public User() {
+        // Default constructor required by JPA
+    }
 
     public User(String username, String passwordHash, String firstName,
                 String lastName, String email, String role) {
@@ -51,15 +55,15 @@ public class User {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void setPasswordHash(String encode) {
-        this.passwordHash = passwordHash;
+    // Optional: Convenience method to update timestamps
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
-    public String getUsername() {
-        return "";
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
-
-
-    // --- Getters & Setters ---
-    // (generate via IDE for all fields)
 }
