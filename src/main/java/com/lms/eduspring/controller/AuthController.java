@@ -44,7 +44,7 @@ public class AuthController {
     public ResponseEntity<String> login(@RequestBody LoginRequestDto loginDto) {
         boolean success = userService.verifyLogin(loginDto.getUsername(), loginDto.getPassword());
         if (success) {
-            return ResponseEntity.ok("Login successful!");
+            return ResponseEntity.ok("Login successful");
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
         }
