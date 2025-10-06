@@ -33,16 +33,13 @@ class UserServiceImplTest {
 
     @Test
     void registerUser_ShouldSaveUser_WhenUsernameIsUnique() {
-        // Arrange
 
         User user = new User("newUser", "plainPass", "John", "Doe", "john@example.com", "STUDENT");
         when(userRepository.findByUsername("newUser")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("plainPass")).thenReturn("hashedPass");
 
-        // Act
         userService.registerUser(user);
 
-        // Assert
         verify(passwordEncoder).encode("plainPass"); // password was hashed
         verify(userRepository).save(user);// user was saved
 //        System.out.println("Test is running!");
@@ -50,11 +47,16 @@ class UserServiceImplTest {
 
     @Test
     void registerUser_ShouldThrowException_WhenUsernameExists() {
-        // Arrange
-        User user = new User("existingUser", "pass", "Jane", "Smith", "jane@example.com", "STUDENT");
+        User user = new User(
+                "existingUser",
+                "pass",
+                "Jane",
+                "Smith",
+                "jane@example.com",
+                "STUDENT");
+
         when(userRepository.findByUsername("existingUser")).thenReturn(Optional.of(user));
 
-        // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> userService.registerUser(user));
         verify(userRepository, never()).save(any(User.class));
         // should not save
@@ -62,67 +64,53 @@ class UserServiceImplTest {
 
     @Test
     void findByUsername_ShouldReturnUser_WhenUserExists() {
-        // Arrange
         User user = new User("alice", "hash", "Alice", "Brown", "alice@example.com", "STUDENT");
         when(userRepository.findByUsername("alice")).thenReturn(Optional.of(user));
 
-        // Act
         User found = userService.findByUsername("alice");
 
-        // Assert
         assertNotNull(found);
         assertEquals("alice", found.getUsername());
     }
 
     @Test
     void findByUsername_ShouldReturnNull_WhenUserNotFound() {
-        // Arrange
+
         when(userRepository.findByUsername("unknown")).thenReturn(Optional.empty());
 
-        // Act
         User found = userService.findByUsername("unknown");
 
-        // Assert
         assertNull(found);
     }
 
     @Test
     void verifyLogin_ShouldReturnTrue_WhenPasswordMatches() {
-        // Arrange
         User user = new User("bob", "hashed", "Bob", "Lee", "bob@example.com", "STUDENT");
         when(userRepository.findByUsername("bob")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("rawPass", "hashed")).thenReturn(true);
 
-        // Act
         boolean result = userService.verifyLogin("bob", "rawPass");
 
-        // Assert
         assertTrue(result);
     }
 
     @Test
     void verifyLogin_ShouldReturnFalse_WhenPasswordDoesNotMatch() {
-        // Arrange
         User user = new User("bob", "hashed", "Bob", "Lee", "bob@example.com", "STUDENT");
         when(userRepository.findByUsername("bob")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("wrongPass", "hashed")).thenReturn(false);
 
-        // Act
         boolean result = userService.verifyLogin("bob", "wrongPass");
 
-        // Assert
         assertFalse(result);
     }
 
     @Test
     void verifyLogin_ShouldReturnFalse_WhenUserNotFound() {
-        // Arrange
         when(userRepository.findByUsername("missingUser")).thenReturn(Optional.empty());
 
-        // Act
         boolean result = userService.verifyLogin("missingUser", "anyPass");
 
-        // Assert
         assertFalse(result);
     }
 }
