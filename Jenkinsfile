@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/yourusername/eduspring.git'
+                git branch: 'main', url: 'https://github.com/Nazulka/eduspring.git'
             }
         }
 
@@ -22,9 +22,16 @@ pipeline {
 
         stage('Test') {
             steps {
+            // run unit tests
                 sh './gradlew test'
             }
         }
+        stage('Code Coverage') {
+                    steps {
+                        // Generate coverage report
+                        sh './gradlew jacocoTestReport'
+                    }
+                }
     }
 
     post {
