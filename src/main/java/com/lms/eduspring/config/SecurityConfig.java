@@ -4,18 +4,30 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder; // Import the specific implementation
+import org.springframework.security.crypto.password.PasswordEncoder; // Import the interface
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
- * SecurityConfig: Configures Spring Security to allow public access to certain paths.
- *
- * This configuration overrides the default "deny all" behavior.
+ * SecurityConfig: Configures Spring Security to allow public access to certain paths
+ * and provides necessary security beans like the PasswordEncoder.
  */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    /**
+     * Define the PasswordEncoder bean.
+     * This method tells Spring that when any component (like UserService)
+     * asks for a PasswordEncoder, it should inject a BCryptPasswordEncoder instance.
+     * @return BCryptPasswordEncoder instance.
+     */
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        // BCrypt is the standard, highly secure password hashing function.
+        return new BCryptPasswordEncoder();
+    }
+
 
     /**
      * Defines the security filter chain which contains all authorization rules.
@@ -36,7 +48,8 @@ public class SecurityConfig {
                                 "/login",
                                 "/register",
                                 "/api/auth/**", // For public registration/login API calls
-                                "/h2-console/**" // For the H2 database console UI
+                                "/h2-console/**", // For the H2 database console UI
+                                "/css/**" // Important: allow access to static resources like CSS
                         ).permitAll()
                         // Require authentication for all other requests
                         .anyRequest().authenticated()
@@ -52,11 +65,11 @@ public class SecurityConfig {
                         .permitAll()
                 )
                 // 4. Configure logout mechanism
-                .logout(LogoutConfigurer::permitAll
+                .logout(logout -> logout
+                        .permitAll()
                 )
                 // 5. Disable CSRF protection for /h2-console/ and Postman/cURL testing
-                // NOTE: You should keep CSRF enabled for production front-end forms.
-                .csrf(AbstractHttpConfigurer::disable);
+                .csrf(csrf -> csrf.disable());
 
         return http.build();
     }
