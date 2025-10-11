@@ -24,7 +24,7 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Username already taken");
         }
         // hash password before saving
-        user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
     }
 
@@ -37,6 +37,6 @@ public class UserServiceImpl implements UserService {
     public boolean verifyLogin(String username, String rawPassword) {
         User user = findByUsername(username);
         if (user == null) return false;
-        return passwordEncoder.matches(rawPassword, user.getPasswordHash());
+        return passwordEncoder.matches(rawPassword, user.getPassword());
     }
 }
