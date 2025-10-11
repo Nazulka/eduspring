@@ -33,6 +33,7 @@ public class AuthController {
             );
 
             userService.registerUser(user);
+            System.out.println("Received registration form for: " + registrationDto.getUsername());
             return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully!");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
