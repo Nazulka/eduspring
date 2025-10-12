@@ -41,15 +41,14 @@ public class SecurityConfig {
         http
                 // 1. Configure authorization rules
                 .authorizeHttpRequests(requests -> requests
-                        // Allow public access to all static front-end pages, API auth endpoints,
-                        // and the H2 console.
+
                         .requestMatchers(
                                 "/",
                                 "/login",
                                 "/register",
-                                "/api/auth/**", // For public registration/login API calls
-                                "/h2-console/**", // For the H2 database console UI
-                                "/css/**" // Important: allow access to static resources like CSS
+                                "/api/auth/**",
+                                "/h2-console/**",
+                                "/static/**"
                         ).permitAll()
                         // Require authentication for all other requests
                         .anyRequest().authenticated()

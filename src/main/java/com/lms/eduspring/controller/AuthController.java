@@ -4,11 +4,16 @@ import com.lms.eduspring.dto.UserRegistrationDto;
 import com.lms.eduspring.dto.LoginRequestDto;
 import com.lms.eduspring.model.User;
 import com.lms.eduspring.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller; // We need this for the Thymeleaf form submission method
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult; // NEW: Needed for form error handling
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-@RestController
+@Controller // Use @Controller for the class since we have a mix of view and JSON responses
 @RequestMapping("/api/auth")
 public class AuthController {
 
@@ -18,29 +23,69 @@ public class AuthController {
         this.userService = userService;
     }
 
+    // Handles Thymeleaf Form Submission
+    // This method should be moved to a FrontendController for cleaner architecture
+    @PostMapping(value = "/register", consumes = "application/x-www-form-urlencoded")
+    public String registerForm(
+            @Valid @ModelAttribute("registrationForm") UserRegistrationDto dto, // Use @Valid and BindingResult
+            BindingResult result,
+            RedirectAttributes redirectAttributes) {
 
-    // Registration endpoint
-    @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody UserRegistrationDto registrationDto) {
+        if (result.hasErrors()) {
+            // If validation fails, return to the registration page.
+            return "register";
+        }
+
+        try {
+            User user = new User(
+                    dto.getUsername(),
+                    dto.getPassword(),
+                    dto.getFirstName(), // Updated with new DTO fields
+                    dto.getLastName(),  // Updated with new DTO fields
+                    dto.getEmail(),
+                    "STUDENT"
+            );
+            userService.registerUser(user);
+
+            // Task 9: Use flash attribute for success message
+            redirectAttributes.addFlashAttribute("successMessage", "Registration successful! You can now log in.");
+            return "redirect:/login";
+
+        } catch (IllegalArgumentException e) {
+            // Handle backend errors (e.g., username taken) by adding it to the model
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            // Need to return to the form, but redirection loses model data, so we need to handle this in DTO validation.
+            // For now, let's keep it simple and redirect back.
+            return "redirect:/register";
+        }
+    }
+
+    // Handles JSON POSTs from API / Postman / Tests
+    // The tests in AuthControllerTest are hitting this endpoint.
+    @PostMapping(value = "/register", consumes = "application/json")
+    @ResponseBody // Tells Spring to treat the return value as the response body (JSON/String)
+    public ResponseEntity<String> register(@Valid @RequestBody UserRegistrationDto registrationDto) { // ADDED @Valid
         try {
             User user = new User(
                     registrationDto.getUsername(),
-                    registrationDto.getPassword(), // plain text for now, will be hashed in service
-                    registrationDto.getFirstName(),
-                    registrationDto.getLastName(),
+                    registrationDto.getPassword(),
+                    registrationDto.getFirstName(), // Updated with new DTO fields
+                    registrationDto.getLastName(), // Updated with new DTO fields
                     registrationDto.getEmail(),
-                    "STUDENT" // default role
+                    "STUDENT"
             );
-
             userService.registerUser(user);
-            return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully!");
+            // Tests expect HTTP Status 201 Created and the body string.
+            return ResponseEntity.status(HttpStatus.CREATED).body("Registration successful! Please log in.");
         } catch (IllegalArgumentException e) {
+            // Tests expect HTTP Status 400 Bad Request and the exception message.
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
-    //  Login endpoint
+    // Login endpoint
     @PostMapping("/login")
+    @ResponseBody
     public ResponseEntity<String> login(@RequestBody LoginRequestDto loginDto) {
         boolean success = userService.verifyLogin(loginDto.getUsername(), loginDto.getPassword());
         if (success) {
