@@ -16,7 +16,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private UUID id; // primary key, auto-generated
+    private Long id; // primary key, auto-generated
 
     @NotBlank
     @Column(nullable = false, unique = true)
@@ -64,7 +64,9 @@ public class User {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // ✅ Add getters and setters for ALL fields you need
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
 

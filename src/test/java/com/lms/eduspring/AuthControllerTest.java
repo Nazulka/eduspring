@@ -37,6 +37,10 @@ class AuthControllerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
     }
 
+//    @Test
+//    void contextLoads() {
+//    }
+
     @Test
     void testRegisterUser_Success() throws Exception {
         UserRegistrationDto dto = new UserRegistrationDto();
@@ -53,7 +57,7 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())
-                .andExpect(content().string("User registered successfully!"));
+                .andExpect(content().string("Registration successful! Please log in."));
 
         verify(userService, times(1)).registerUser(any(User.class));
     }

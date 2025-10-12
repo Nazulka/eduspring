@@ -49,7 +49,7 @@ public class SecurityConfig {
                                 "/register",
                                 "/api/auth/**", // For public registration/login API calls
                                 "/h2-console/**", // For the H2 database console UI
-                                "/css/**" // Important: allow access to static resources like CSS
+                                "/static/**" // Important: allow access to static resources like CSS
                         ).permitAll()
                         // Require authentication for all other requests
                         .anyRequest().authenticated()
