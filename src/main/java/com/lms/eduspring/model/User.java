@@ -1,6 +1,9 @@
 package com.lms.eduspring.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,21 +15,29 @@ import java.util.UUID;
 public class User {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private UUID id; // primary key, auto-generated
 
-    @Column(nullable = false, unique = true, length = 50)
+    @NotBlank
+    @Column(nullable = false, unique = true)
+    @Size(min = 3, max = 50)
     private String username;
 
+    @NotBlank
+    @Size(min = 6)
     @Column(nullable = false)
     private String password;
 
+    @NotBlank
     @Column(nullable = false, length = 100)
     private String firstName;
 
+    @NotBlank
     @Column(nullable = false, length = 100)
     private String lastName;
 
+    @NotBlank
+    @Email
     @Column(nullable = false, unique = true, length = 150)
     private String email;
 
