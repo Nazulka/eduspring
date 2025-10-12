@@ -4,14 +4,14 @@ import com.lms.eduspring.dto.UserRegistrationDto;
 import com.lms.eduspring.dto.LoginRequestDto;
 import com.lms.eduspring.model.User;
 import com.lms.eduspring.service.UserService;
-import jakarta.validation.Valid; // NEW: Needed for validation
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller; // We need this for the Thymeleaf form submission method
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult; // NEW: Needed for form error handling
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes; // NEW: Needed for success messages
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller // Use @Controller for the class since we have a mix of view and JSON responses
 @RequestMapping("/api/auth")
@@ -23,8 +23,8 @@ public class AuthController {
         this.userService = userService;
     }
 
-    // ✅ 1. Handles Thymeleaf Form Submission (for Tasks 7, 8, 9)
-    // NOTE: This method should be moved to a FrontendController for cleaner architecture
+    // Handles Thymeleaf Form Submission
+    // This method should be moved to a FrontendController for cleaner architecture
     @PostMapping(value = "/register", consumes = "application/x-www-form-urlencoded")
     public String registerForm(
             @Valid @ModelAttribute("registrationForm") UserRegistrationDto dto, // Use @Valid and BindingResult
@@ -32,7 +32,7 @@ public class AuthController {
             RedirectAttributes redirectAttributes) {
 
         if (result.hasErrors()) {
-            // Task 8: If validation fails, return to the registration page.
+            // If validation fails, return to the registration page.
             return "register";
         }
 
@@ -60,7 +60,7 @@ public class AuthController {
         }
     }
 
-    // ✅ 2. Handles JSON POSTs from API / Postman / Tests
+    // Handles JSON POSTs from API / Postman / Tests
     // The tests in AuthControllerTest are hitting this endpoint.
     @PostMapping(value = "/register", consumes = "application/json")
     @ResponseBody // Tells Spring to treat the return value as the response body (JSON/String)
