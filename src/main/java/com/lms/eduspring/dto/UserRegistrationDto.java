@@ -1,13 +1,15 @@
 package com.lms.eduspring.dto;
-
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Size;
 
 public class UserRegistrationDto {
-    @NotBlank(message = "Username cannot be empty")
+    @NotBlank(message = "Username is required")
+    @Size(min = 3, max = 50)
     private String username;
 
-    @NotBlank(message = "Password cannot be empty")
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
 
     @NotBlank(message = "First name cannot be empty")
@@ -16,8 +18,8 @@ public class UserRegistrationDto {
     @NotBlank(message = "Last name cannot be empty")
     private String lastName;
 
-    @Email(message = "Email should be valid")
-    @NotBlank(message = "Email cannot be empty")
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
     private String email;
 
 
