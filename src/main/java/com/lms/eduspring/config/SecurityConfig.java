@@ -16,58 +16,34 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    /**
-     * Define the PasswordEncoder bean.
-     * This method tells Spring that when any component (like UserService)
-     * asks for a PasswordEncoder, it should inject a BCryptPasswordEncoder instance.
-     * @return BCryptPasswordEncoder instance.
-     */
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // BCrypt is the standard, highly secure password hashing function.
         return new BCryptPasswordEncoder();
     }
 
-
-    /**
-     * Defines the security filter chain which contains all authorization rules.
-     *
-     * @param http The HttpSecurity object to configure.
-     * @return The configured SecurityFilterChain bean.
-     * @throws Exception if configuration fails.
-     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // 1. Configure authorization rules
-                .authorizeHttpRequests(requests -> requests
-
+                .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/",
                                 "/login",
                                 "/register",
-                                "/api/auth/**",
+                                "/api/auth/**",    // <-- UNCOMMENTED
                                 "/h2-console/**",
-                                "/static/**"
+                                "/css/**"
                         ).permitAll()
-                        // Require authentication for all other requests
                         .anyRequest().authenticated()
                 )
-
-                // 2. Configure header options, necessary for H2 console to work in a browser
-                // by disabling X-Frame-Options protection for the console's iframe.
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()))
-
-                // 3. Configure form login mechanism
                 .formLogin(form -> form
                         .loginPage("/login")
+                        .defaultSuccessUrl("/", true)
                         .permitAll()
                 )
-                // 4. Configure logout mechanism
                 .logout(logout -> logout
                         .permitAll()
                 )
-                // 5. Disable CSRF protection for /h2-console/ and Postman/cURL testing
                 .csrf(csrf -> csrf.disable());
 
         return http.build();
