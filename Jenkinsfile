@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/Nazulka/eduspring.git'
+                git branch: 'feat/frontEnd2', url: 'https://github.com/Nazulka/eduspring.git'
             }
         }
 
