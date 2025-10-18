@@ -74,14 +74,16 @@ class UserServiceImplTest {
     }
 
     @Test
-    void findByUsername_ShouldReturnNull_WhenUserNotFound() {
-
+    void findByUsername_ShouldThrowException_WhenUserNotFound() {
         when(userRepository.findByUsername("unknown")).thenReturn(Optional.empty());
 
-        User found = userService.findByUsername("unknown");
+        assertThrows(IllegalArgumentException.class, () -> {
+            userService.findByUsername("unknown");
+        });
 
-        assertNull(found);
+        verify(userRepository, times(1)).findByUsername("unknown");
     }
+
 
     @Test
     void verifyLogin_ShouldReturnTrue_WhenPasswordMatches() {
