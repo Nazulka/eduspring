@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <h1>Register</h1>
+
+    <!-- Flash messages -->
+    <div th:if="${successMessage}" style="color:green;" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" style="color:red;" th:text="${errorMessage}"></div>
+
+    <form th:action="@{/register}" th:object="${registrationForm}" method="post">
+        <label>Username:
+            <input type="text" th:field="*{username}" placeholder="Username"/>
+            <span style="color:red" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></span>
+        </label><br/>
+
+        <label>Password:
+            <input type="password" th:field="*{password}" placeholder="Password"/>
+            <span style="color:red" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
+        </label><br/>
+
+        <label>First Name:
+            <input type="text" th:field="*{firstName}" placeholder="First Name"/>
+            <span style="color:red" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}"></span>
+        </label><br/>
+
+        <label>Last Name:
+            <input type="text" th:field="*{lastName}" placeholder="Last Name"/>
+            <span style="color:red" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}"></span>
+        </label><br/>
+
+        <label>Email:
+            <input type="email" th:field="*{email}" placeholder="Email"/>
+            <span style="color:red" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+        </label><br/>
+
+        <button type="submit">Register</button>
+    </form>
+
+    <a th:href="@{/login}">Already have an account? Login</a>
+</div>
+</body>
+</html>
