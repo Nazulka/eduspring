@@ -1,5 +1,7 @@
 package com.lms.eduspring.controller;
 
+import com.lms.eduspring.dto.ChatRequest;
+import com.lms.eduspring.dto.ChatResponse;
 import com.lms.eduspring.service.ChatService;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,7 +16,8 @@ public class ChatController {
     }
 
     @PostMapping
-    public String chat(@RequestBody String message) {
-        return chatService.chat(message);
+    public ChatResponse chat(@RequestBody ChatRequest request) {
+        String reply = chatService.chat(request.getMessage());
+        return new ChatResponse(reply);
     }
 }
