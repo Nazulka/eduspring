@@ -1,5 +1,6 @@
 package com.lms.eduspring.controller;
 
+import com.lms.eduspring.security.JwtService;
 import com.lms.eduspring.dto.LoginRequestDto;
 import com.lms.eduspring.dto.UserRegistrationDto;
 import com.lms.eduspring.model.User;
@@ -9,15 +10,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "http://localhost:3000") // allow React frontend
 public class AuthController {
 
     private final UserService userService;
+    private final JwtService jwtService;
 
-    public AuthController(UserService userService) {
+    public AuthController(UserService userService, JwtService jwtService) {
         this.userService = userService;
+        this.jwtService = jwtService;
     }
 
     // === POST: Register new user ===
@@ -46,7 +51,8 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody LoginRequestDto loginDto) {
         boolean success = userService.verifyLogin(loginDto.getUsername(), loginDto.getPassword());
         if (success) {
-            return ResponseEntity.ok("{\"message\":\"Login successful\"}");
+            String token = jwtService.generateToken(loginDto.getUsername(), Map.of());
+            return ResponseEntity.ok(Map.of("token", token));
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("{\"error\":\"Invalid username or password\"}");
