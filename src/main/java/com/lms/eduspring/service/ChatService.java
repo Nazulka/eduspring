@@ -8,16 +8,27 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 @Service
 public class ChatService {
 
+    private final List<String> messages = new ArrayList<>();
+
+    public List<String> getMessages() {
+        return new ArrayList<>(messages);
+    }
+
+    public void saveMessage(String message) {
+        messages.add(message);
+    }
+
     private final WebClient webClient;
 
     public ChatService(@Value("${openai.api.key}") String apiKey) {
-        System.out.println("🔑 OpenAI Key (first 10 chars): " +
+        System.out.println("OpenAI Key (first 10 chars): " +
                 (apiKey != null ? apiKey.substring(0, Math.min(apiKey.length(), 10)) : "NULL"));
 
         this.webClient = WebClient.builder()
@@ -37,14 +48,14 @@ public class ChatService {
                 .bodyValue(requestBody)
                 .retrieve()
 
-                // Handle specific HTTP statuses
-                .onStatus(HttpStatus.TOO_MANY_REQUESTS::equals,
+                .onStatus(status -> status.equals(HttpStatus.TOO_MANY_REQUESTS),
                         response -> Mono.error(new RuntimeException("Rate limit reached. Please wait a moment and try again.")))
-                .onStatus(HttpStatus.UNAUTHORIZED::equals,
+                .onStatus(status -> status.equals(HttpStatus.UNAUTHORIZED),
                         response -> Mono.error(new RuntimeException("Invalid API key or unauthorized request.")))
-                .onStatus(HttpStatus.BAD_REQUEST::equals,
+                .onStatus(status -> status.equals(HttpStatus.BAD_REQUEST),
                         response -> Mono.error(new RuntimeException("Bad request. Please check your input.")))
 
+                // ✅ Convert to Map once
                 .bodyToMono(Map.class)
                 .map(res -> {
                     var choices = (List<Map<String, Object>>) res.get("choices");
@@ -55,11 +66,10 @@ public class ChatService {
                     return "No response from AI.";
                 })
 
-                // Catch-all for unexpected errors
+                // ✅ Handle general errors
                 .onErrorResume(WebClientResponseException.class,
                         e -> Mono.just("Error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString()))
                 .onErrorResume(e -> Mono.just("Error: " + e.getMessage()))
-
                 .block();
     }
 }
