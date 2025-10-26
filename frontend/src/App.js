@@ -1,38 +1,35 @@
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import Register from "./components/Register";
-import Login from "./components/Login";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-// backend java
+import { AuthProvider } from "./context/AuthContext"; // ✅ import provider
+import ProtectedRoute from "./components/ProtectedRoute";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import ChatPage from "./pages/ChatPage";
+
 function App() {
   return (
-    <Router>
-      <nav style={styles.navbar}>
-        <Link to="/" style={styles.link}>Home</Link>
-        <Link to="/register" style={styles.link}>Register</Link>
-        <Link to="/login" style={styles.link}>Login</Link>
-      </nav>
-
-      <Routes>
-        <Route path="/" element={<h2>Welcome to EduSpring</h2>} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <ToastContainer position="top-center" autoClose={2000} />
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route
+            path="/chat"
+            element={
+              <ProtectedRoute>
+                <ChatPage />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
-
-const styles = {
-  navbar: {
-    padding: "10px",
-    backgroundColor: "#f2f2f2",
-    marginBottom: "20px"
-  },
-  link: {
-    marginRight: "15px",
-    textDecoration: "none",
-    color: "#007bff",
-    fontWeight: "bold"
-  }
-};
 
 export default App;
