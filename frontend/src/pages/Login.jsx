@@ -1,14 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Login() {
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // ✅ Show feedback if redirected from a protected route
+  useEffect(() => {
+    if (location.state?.showAuthMessage) {
+      toast.info("You must be logged in to access the chat.");
+    }
+  }, [location.state]);
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -26,16 +39,21 @@ export default function Login() {
       const response = await fetch("http://localhost:8081/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
-      const text = await response.text();
+      const data = await response.json();
 
-      if (response.ok) {
-        setMessage(text || "Login successful!");
+      if (response.ok && data.token) {
+        // ✅ Store the token for authentication
+        localStorage.setItem("token", data.token);
+        setMessage("Login successful!");
         setFormData({ username: "", password: "" });
+
+        // ✅ Redirect to chat after login
+        navigate("/chat");
       } else {
-        setError(text || "Invalid credentials.");
+        setError(data.error || "Invalid credentials.");
       }
     } catch (err) {
       setError("Network error: could not reach server.");
@@ -80,14 +98,14 @@ const styles = {
     border: "1px solid #ccc",
     borderRadius: "8px",
     backgroundColor: "#f9f9f9",
-    textAlign: "center"
+    textAlign: "center",
   },
   header: { marginBottom: "20px" },
   form: { display: "flex", flexDirection: "column", gap: "10px" },
   input: {
     padding: "10px",
     borderRadius: "5px",
-    border: "1px solid #ccc"
+    border: "1px solid #ccc",
   },
   button: {
     backgroundColor: "#28a745",
@@ -95,6 +113,6 @@ const styles = {
     padding: "10px",
     border: "none",
     borderRadius: "5px",
-    cursor: "pointer"
-  }
+    cursor: "pointer",
+  },
 };
