@@ -1,39 +1,41 @@
-package com.lms.eduspring;
+package com.lms.eduspring.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lms.eduspring.controller.AuthController;
 import com.lms.eduspring.dto.UserRegistrationDto;
 import com.lms.eduspring.service.UserService;
-import org.junit.jupiter.api.BeforeEach;
+import com.lms.eduspring.service.JwtService;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+/**
+ * Controller-layer test for AuthController.
+ * Uses @WebMvcTest to load only the web layer (controller + security filters).
+ */
+@WebMvcTest(AuthController.class)
+@AutoConfigureMockMvc(addFilters = false) // disable Spring Security filters for simplicity
 class AuthControllerTest {
 
-    @Mock
-    private UserService userService;
-
-    @InjectMocks
-    private AuthController authController;
-
+    @Autowired
     private MockMvc mockMvc;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    @BeforeEach
-    void setup() {
-        MockitoAnnotations.openMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
-    }
+    // ✅ Mock dependencies injected into AuthController
+    @MockBean
+    private UserService userService;
+
+    @MockBean
+    private JwtService jwtService;
 
     @Test
     void testRegisterUser_Success() throws Exception {
@@ -81,7 +83,9 @@ class AuthControllerTest {
         String username = "student1";
         String password = "password123";
 
-        when(userService.verifyLogin(username, password)).thenReturn(true);
+        when(userService.verifyLogin(eq(username), eq(password))).thenReturn(true);
+        // ✅ Updated mock for JwtService (2 parameters)
+        when(jwtService.generateToken(eq(username), anyMap())).thenReturn("mocked-jwt-token");
 
         String requestBody = "{ \"username\": \"" + username + "\", \"password\": \"" + password + "\" }";
 
@@ -89,17 +93,21 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Login successful"));
+                .andExpect(jsonPath("$.message").value("Login successful"))
+                .andExpect(jsonPath("$.token").value("mocked-jwt-token"));
 
         verify(userService, times(1)).verifyLogin(username, password);
+        // ✅ Updated verification for JwtService (2 parameters)
+        verify(jwtService, times(1)).generateToken(eq(username), anyMap());
     }
+
 
     @Test
     void testLogin_Failure() throws Exception {
         String username = "student1";
         String password = "wrongPassword";
 
-        when(userService.verifyLogin(username, password)).thenReturn(false);
+        when(userService.verifyLogin(eq(username), eq(password))).thenReturn(false);
 
         String requestBody = "{ \"username\": \"" + username + "\", \"password\": \"" + password + "\" }";
 
@@ -110,5 +118,8 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.error").value("Invalid username or password"));
 
         verify(userService, times(1)).verifyLogin(username, password);
+        // ✅ Updated to match new JwtService signature
+        verify(jwtService, never()).generateToken(anyString(), anyMap());
     }
+
 }

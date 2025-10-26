@@ -1,6 +1,6 @@
 package com.lms.eduspring.controller;
 
-import com.lms.eduspring.security.JwtService;
+import com.lms.eduspring.service.JwtService;
 import com.lms.eduspring.dto.LoginRequestDto;
 import com.lms.eduspring.dto.UserRegistrationDto;
 import com.lms.eduspring.model.User;
@@ -52,10 +52,13 @@ public class AuthController {
         boolean success = userService.verifyLogin(loginDto.getUsername(), loginDto.getPassword());
         if (success) {
             String token = jwtService.generateToken(loginDto.getUsername(), Map.of());
-            return ResponseEntity.ok(Map.of("token", token));
+            return ResponseEntity.ok(Map.of(
+                    "message", "Login successful",
+                    "token", token
+            ));
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("{\"error\":\"Invalid username or password\"}");
+                    .body(Map.of("error", "Invalid username or password"));
         }
     }
 }

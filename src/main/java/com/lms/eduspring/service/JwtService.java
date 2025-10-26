@@ -1,4 +1,4 @@
-package com.lms.eduspring.security;
+package com.lms.eduspring.service;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
