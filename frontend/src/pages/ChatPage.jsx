@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import Chat from "../components/Chat";
 import { toast } from "react-toastify";
 
 export default function ChatPage() {
@@ -14,8 +15,8 @@ export default function ChatPage() {
 
   return (
     <div style={styles.container}>
-      <h2>Welcome to the Chat Page 💬</h2>
-      <p>This is a protected route — only logged-in users can see this.</p>
+    <h2 style={{ textAlign: "center", marginTop: "20px" }}>Chat Assistant 💬</h2>
+      <Chat />
       <button onClick={handleLogout} style={styles.button}>
         Logout
       </button>
