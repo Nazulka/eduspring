@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext"; // make sure this hook exists
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -6,16 +8,25 @@ export default function Register() {
     password: "",
     firstName: "",
     lastName: "",
-    email: ""
+    email: "",
   });
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth(); // check if user is logged in
+
+  // 🧭 Redirect logged-in users away from register page
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/chat"); // or "/home"
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -34,20 +45,23 @@ export default function Register() {
       const response = await fetch("http://localhost:8081/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       const text = await response.text();
 
       if (response.ok) {
-        setMessage(text || "Registration successful!");
+        setMessage(text || "Registration successful! Redirecting to login...");
         setFormData({
           username: "",
           password: "",
           firstName: "",
           lastName: "",
-          email: ""
+          email: "",
         });
+
+        // Redirect to login after 2 seconds
+        setTimeout(() => navigate("/login"), 2000);
       } else {
         setError(text || "Something went wrong. Please try again.");
       }
@@ -116,20 +130,20 @@ const styles = {
     border: "1px solid #ccc",
     borderRadius: "8px",
     backgroundColor: "#f9f9f9",
-    textAlign: "center"
+    textAlign: "center",
   },
   header: {
-    marginBottom: "20px"
+    marginBottom: "20px",
   },
   form: {
     display: "flex",
     flexDirection: "column",
-    gap: "10px"
+    gap: "10px",
   },
   input: {
     padding: "10px",
     borderRadius: "5px",
-    border: "1px solid #ccc"
+    border: "1px solid #ccc",
   },
   button: {
     backgroundColor: "#007bff",
@@ -137,6 +151,6 @@ const styles = {
     padding: "10px",
     border: "none",
     borderRadius: "5px",
-    cursor: "pointer"
-  }
+    cursor: "pointer",
+  },
 };

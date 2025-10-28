@@ -27,7 +27,7 @@ public class ChatService {
 
     private final WebClient webClient;
 
-    public ChatService(@Value("${openai.api.key}") String apiKey) {
+    public ChatService(@Value("${OPENAI_API_KEY}") String apiKey) {
         System.out.println("OpenAI Key (first 10 chars): " +
                 (apiKey != null ? apiKey.substring(0, Math.min(apiKey.length(), 10)) : "NULL"));
 
