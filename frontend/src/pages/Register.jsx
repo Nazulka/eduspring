@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext"; // make sure this hook exists
+import { useAuth } from "../context/AuthContext"; // must return { isAuthenticated }
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -14,29 +14,38 @@ export default function Register() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth(); // check if user is logged in
+  const { isAuthenticated } = useAuth();
 
-  // 🧭 Redirect logged-in users away from register page
+  // 🧹 Ensure user is logged out when accessing register page
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/chat"); // or "/home"
+    localStorage.removeItem("token");
+  }, []);
+
+  // 🚫 Redirect authenticated users trying to access /register manually
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token && isAuthenticated) {
+      navigate("/chat");
     }
   }, [isAuthenticated, navigate]);
 
+  // ✏️ Handle form field changes
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [e.target.name]: e.target.value,
-    });
+    }));
   };
 
+  // 🚀 Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
     setError("");
 
-    // Simple client-side validation
-    if (!formData.username || !formData.password || !formData.email) {
+    // Basic validation
+    const { username, password, email } = formData;
+    if (!username || !password || !email) {
       setError("Username, password, and email are required.");
       return;
     }
@@ -60,19 +69,20 @@ export default function Register() {
           email: "",
         });
 
-        // Redirect to login after 2 seconds
+        // ✅ Redirect to login after a short delay
         setTimeout(() => navigate("/login"), 2000);
       } else {
         setError(text || "Something went wrong. Please try again.");
       }
     } catch (err) {
-      setError("Network error: could not reach server.");
+      setError("Network error: could not reach the server.");
     }
   };
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.header}>User Registration</h2>
+      <h2 style={styles.header}>Create Your EduSpring Account</h2>
+
       <form onSubmit={handleSubmit} style={styles.form}>
         <input
           name="username"
@@ -116,8 +126,8 @@ export default function Register() {
         </button>
       </form>
 
-      {message && <p style={{ color: "green" }}>{message}</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {message && <p style={{ color: "green", marginTop: "10px" }}>{message}</p>}
+      {error && <p style={{ color: "red", marginTop: "10px" }}>{error}</p>}
     </div>
   );
 }

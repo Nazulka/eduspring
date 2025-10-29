@@ -10,7 +10,7 @@ export default function Home() {
 
       <div className="auth-section">
         <p>If you already have an account, please <Link to="/login" className="nav-link">log in</Link>.</p>
-        <p>If you’re new here, you can <Link to="/register" className="nav-link">create an account</Link>.</p>
+        <p>If you’re new here, you can <Link to="/register" className="nav-link">Sign Up</Link>.</p>
       </div>
 
       <nav className="home-nav">
