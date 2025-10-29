@@ -29,7 +29,7 @@ export default function Chat() {
 
     try {
       const response = await api.post("/chat", { message: input });
-      const reply = response.data.message || "No response from server.";
+      const reply = response.data.aiReply || "⚠️ AI did not respond.";
 
       const botMessage = {
         sender: "bot",
@@ -40,6 +40,7 @@ export default function Chat() {
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
       setMessages((prev) => [
+          console.error("❌ Chat error:", error),
         ...prev,
         {
           sender: "bot",
