@@ -24,6 +24,7 @@ public class JwtService {
         this.jwtExpiration = jwtExpiration;
     }
 
+
     // Generate a token with username + optional claims
     public String generateToken(String username, Map<String, Object> extraClaims) {
         long now = System.currentTimeMillis();
