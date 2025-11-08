@@ -44,6 +44,9 @@ dependencies {
 	// postrgressql
 	implementation 'org.postgresql:postgresql:42.7.3'
 
+	// .env support
+	implementation 'me.paulschwarz:spring-dotenv:4.0.0'
+
 
 	runtimeOnly 'com.h2database:h2'
 	compileOnly 'org.projectlombok:lombok'
