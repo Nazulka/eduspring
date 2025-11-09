@@ -62,46 +62,35 @@ public class ChatController {
             @RequestParam(required = false) Long sessionId,
             @RequestParam String message
     ) {
-        try {
-            // Save user's message and create session if needed
-            ChatSession session = chatService.processUserMessage(userId, sessionId, message);
+        ChatSession session = chatService.processUserMessage(userId, sessionId, message);
 
-            // Prepare OpenAI request
-            String openAiUrl = "https://api.openai.com/v1/chat/completions";
+        String openAiUrl = "https://api.openai.com/v1/chat/completions";
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(openAiApiKey);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(openAiApiKey);
 
-            Map<String, Object> body = new HashMap<>();
-            body.put("model", "gpt-3.5-turbo");
-            body.put("messages", List.of(
-                    Map.of("role", "system", "content", "You are EduSpring AI assistant, a helpful learning mentor."),
-                    Map.of("role", "user", "content", message)
-            ));
+        Map<String, Object> body = new HashMap<>();
+        body.put("model", "gpt-3.5-turbo");
+        body.put("messages", List.of(
+                Map.of("role", "system", "content", "You are EduSpring AI assistant, a helpful learning mentor."),
+                Map.of("role", "user", "content", message)
+        ));
 
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
-            ResponseEntity<Map> response = restTemplate.postForEntity(openAiUrl, entity, Map.class);
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+        ResponseEntity<Map> response = restTemplate.postForEntity(openAiUrl, entity, Map.class);
 
-            // Extract AI response
-            String aiReply = (String) ((Map) ((Map) ((List) response.getBody().get("choices")).get(0))
-                    .get("message"))
-                    .get("content");
+        String aiReply = (String) ((Map) ((Map) ((List) response.getBody().get("choices")).get(0))
+                .get("message"))
+                .get("content");
 
-            // Save AI reply under same session
-            chatService.processUserMessage(userId, session.getId(), aiReply);
+        chatService.processUserMessage(userId, session.getId(), aiReply);
 
-            return ResponseEntity.ok(Map.of(
-                    "sessionId", session.getId(),
-                    "userMessage", message,
-                    "aiReply", aiReply
-            ));
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Failed to contact AI service"));
-        }
+        return ResponseEntity.ok(Map.of(
+                "sessionId", session.getId(),
+                "userMessage", message,
+                "aiReply", aiReply
+        ));
     }
 
     @GetMapping("/sessions")
@@ -117,14 +106,7 @@ public class ChatController {
             @RequestParam Long userId,
             @PathVariable Long sessionId
     ) {
-        try {
-            List<ChatMessage> messages = chatService.getMessagesForUserSession(userId, sessionId);
-            return ResponseEntity.ok(Map.of("messages", messages));
-        } catch (SecurityException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", e.getMessage()));
-        }
+        List<ChatMessage> messages = chatService.getMessagesForUserSession(userId, sessionId);
+        return ResponseEntity.ok(Map.of("messages", messages));
     }
-
-
 }
