@@ -103,4 +103,28 @@ public class ChatController {
                     .body(Map.of("error", "Failed to contact AI service"));
         }
     }
+
+    @GetMapping("/sessions")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> getUserSessions(@RequestParam Long userId) {
+        List<ChatSession> sessions = chatService.getSessionsForUser(userId);
+        return ResponseEntity.ok(Map.of("sessions", sessions));
+    }
+
+    @GetMapping("/sessions/{sessionId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> getSessionMessages(
+            @RequestParam Long userId,
+            @PathVariable Long sessionId
+    ) {
+        try {
+            List<ChatMessage> messages = chatService.getMessagesForUserSession(userId, sessionId);
+            return ResponseEntity.ok(Map.of("messages", messages));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+
 }

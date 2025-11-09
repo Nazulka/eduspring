@@ -50,4 +50,22 @@ public class ChatService {
                 .orElseThrow(() -> new IllegalArgumentException("Chat session not found"));
         return session.getMessages();
     }
+
+    public List<ChatSession> getSessionsForUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        return chatSessionRepository.findByUser(user);
+    }
+
+    public List<ChatMessage> getMessagesForUserSession(Long userId, Long sessionId) {
+        ChatSession session = chatSessionRepository.findById(sessionId)
+                .orElseThrow(() -> new IllegalArgumentException("Chat session not found"));
+
+        if (!session.getUser().getId().equals(userId)) {
+            throw new SecurityException("Access denied: session does not belong to this user");
+        }
+
+        return session.getMessages();
+    }
+
 }
