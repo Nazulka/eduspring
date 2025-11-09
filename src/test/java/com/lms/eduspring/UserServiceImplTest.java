@@ -42,7 +42,7 @@ class UserServiceImplTest {
 
         verify(passwordEncoder).encode("plainPass"); // password was hashed
         verify(userRepository).save(user);// user was saved
-//        System.out.println("Test is running!");
+
     }
 
     @Test
