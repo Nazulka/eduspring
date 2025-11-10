@@ -1,7 +1,5 @@
 package com.lms.eduspring.repository;
 
-
-
 import com.lms.eduspring.model.ChatMessage;
 import com.lms.eduspring.model.ChatSession;
 import com.lms.eduspring.model.User;
@@ -29,33 +27,43 @@ class ChatRepositoryTests {
 
     @Test
     void testSaveSessionAndMessages() {
+        // Arrange
         User user = new User("tester", "password", "Test", "User", "test@example.com", "STUDENT");
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
 
         ChatSession session = new ChatSession("First Chat", user);
         session.addMessage(new ChatMessage("user", "Hello there!"));
         session.addMessage(new ChatMessage("ai", "Hi! How can I help?"));
 
-        chatSessionRepository.save(session);
+        // Act
+        chatSessionRepository.saveAndFlush(session);
 
-        List<ChatSession> sessions = chatSessionRepository.findAll();
+        // Assert
+        List<ChatSession> sessions = chatSessionRepository.findByUser(user);
         assertThat(sessions).hasSize(1);
         assertThat(sessions.get(0).getMessages()).hasSize(2);
+        assertThat(sessions.get(0).getMessages().get(0).getContent()).isEqualTo("Hello there!");
     }
 
     @Test
     void testCascadeDeleteSessionRemovesMessages() {
+        // Arrange
         User user = new User("tester2", "password", "Test", "User", "test2@example.com", "STUDENT");
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
 
         ChatSession session = new ChatSession("Cascade Test", user);
         session.addMessage(new ChatMessage("user", "Hi"));
         session.addMessage(new ChatMessage("ai", "Hello"));
-        chatSessionRepository.save(session);
+        chatSessionRepository.saveAndFlush(session);
 
         assertThat(chatMessageRepository.count()).isEqualTo(2);
 
+        // Act
         chatSessionRepository.delete(session);
+        chatSessionRepository.flush();
+
+        // Assert
         assertThat(chatMessageRepository.count()).isZero();
+        assertThat(chatSessionRepository.count()).isZero();
     }
 }

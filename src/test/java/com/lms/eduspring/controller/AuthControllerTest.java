@@ -2,6 +2,7 @@ package com.lms.eduspring.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lms.eduspring.dto.UserRegistrationDto;
+import com.lms.eduspring.model.User;
 import com.lms.eduspring.service.UserService;
 import com.lms.eduspring.service.JwtService;
 import org.junit.jupiter.api.Test;
@@ -11,10 +12,11 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 
 @WebMvcTest(AuthController.class)
 @AutoConfigureMockMvc(addFilters = false) // disable Spring Security filters for simplicity
@@ -26,13 +28,13 @@ class AuthControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    // ✅ Mock dependencies injected into AuthController
     @MockBean
     private UserService userService;
 
     @MockBean
     private JwtService jwtService;
 
+    // === Test: Successful registration ===
     @Test
     void testRegisterUser_Success() throws Exception {
         UserRegistrationDto dto = new UserRegistrationDto();
@@ -53,6 +55,7 @@ class AuthControllerTest {
         verify(userService, times(1)).registerUser(any());
     }
 
+    // === Test: Username already taken ===
     @Test
     void testRegisterUser_UsernameTaken() throws Exception {
         UserRegistrationDto dto = new UserRegistrationDto();
@@ -74,13 +77,23 @@ class AuthControllerTest {
         verify(userService, times(1)).registerUser(any());
     }
 
+    // === Test: Successful login ===
     @Test
     void testLogin_Success() throws Exception {
         String username = "student1";
         String password = "password123";
 
         when(userService.verifyLogin(eq(username), eq(password))).thenReturn(true);
-        // ✅ Updated mock for JwtService (2 parameters)
+
+        User mockUser = new User();
+        mockUser.setId(1L);
+        mockUser.setUsername(username);
+        mockUser.setEmail("alice@example.com");
+        mockUser.setFirstName("Alice");
+        mockUser.setLastName("Smith");
+        mockUser.setRole("STUDENT");
+
+        when(userService.findByUsername(username)).thenReturn(mockUser);
         when(jwtService.generateToken(eq(username), anyMap())).thenReturn("mocked-jwt-token");
 
         String requestBody = "{ \"username\": \"" + username + "\", \"password\": \"" + password + "\" }";
@@ -90,14 +103,15 @@ class AuthControllerTest {
                         .content(requestBody))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Login successful"))
-                .andExpect(jsonPath("$.token").value("mocked-jwt-token"));
+                .andExpect(jsonPath("$.token").value("mocked-jwt-token"))
+                .andExpect(jsonPath("$.user.username").value(username))
+                .andExpect(jsonPath("$.user.email").value("alice@example.com"));
 
         verify(userService, times(1)).verifyLogin(username, password);
-        // ✅ Updated verification for JwtService (2 parameters)
         verify(jwtService, times(1)).generateToken(eq(username), anyMap());
     }
 
-
+    // === Test: Failed login ===
     @Test
     void testLogin_Failure() throws Exception {
         String username = "student1";
@@ -114,8 +128,6 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.error").value("Invalid username or password"));
 
         verify(userService, times(1)).verifyLogin(username, password);
-        // ✅ Updated to match new JwtService signature
         verify(jwtService, never()).generateToken(anyString(), anyMap());
     }
-
 }
