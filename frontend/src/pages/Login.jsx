@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -8,10 +9,11 @@ export default function Login() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  const { login } = useAuth(); // ✅ get login function from AuthContext
   const location = useLocation();
   const navigate = useNavigate();
 
-  // ✅ Show feedback if redirected from a protected route
+  // Show feedback if redirected from a protected route
   useEffect(() => {
     if (location.state?.showAuthMessage) {
       toast.info("You must be logged in to access the chat.");
@@ -45,17 +47,19 @@ export default function Login() {
       const data = await response.json();
 
       if (response.ok && data.token) {
-        // ✅ Store the token for authentication
-        localStorage.setItem("token", data.token);
+        // ✅ Update global auth state + save user and token
+        login(data.token, data.user); // from AuthContext
+
         setMessage("Login successful!");
         setFormData({ username: "", password: "" });
 
-        // ✅ Redirect to chat after login
+        // Redirect to chat
         navigate("/chat");
       } else {
         setError(data.error || "Invalid credentials.");
       }
     } catch (err) {
+      console.error("Login error:", err);
       setError("Network error: could not reach server.");
     }
   };
