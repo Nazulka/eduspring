@@ -38,11 +38,12 @@ public class AuthController {
                     "STUDENT"
             );
             userService.registerUser(user);
+            // ✅ Return proper JSON object instead of a string literal
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body("{\"message\":\"Registration successful!\"}");
+                    .body(Map.of("message", "Registration successful!"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                    .body("{\"error\":\"" + e.getMessage() + "\"}");
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -50,11 +51,33 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDto loginDto) {
         boolean success = userService.verifyLogin(loginDto.getUsername(), loginDto.getPassword());
+
         if (success) {
+            // 1. Fetch the user object
+            User user = userService.findByUsername(loginDto.getUsername());
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "User not found"));
+            }
+
+            // 2. Generate JWT token
             String token = jwtService.generateToken(loginDto.getUsername(), Map.of());
+
+            // 3. Remove password before sending
+            user.setPassword(null);
+
+            // 4. Return both token and user info
             return ResponseEntity.ok(Map.of(
                     "message", "Login successful",
-                    "token", token
+                    "token", token,
+                    "user", Map.of(
+                            "id", user.getId(),
+                            "username", user.getUsername(),
+                            "email", user.getEmail(),
+                            "firstName", user.getFirstName(),
+                            "lastName", user.getLastName(),
+                            "role", user.getRole()
+                    )
             ));
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)

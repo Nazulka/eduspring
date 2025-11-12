@@ -1,6 +1,7 @@
 package com.lms.eduspring.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lms.eduspring.config.TestConfig;
 import com.lms.eduspring.dto.UserRegistrationDto;
 import com.lms.eduspring.model.User;
 import com.lms.eduspring.service.UserService;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -20,6 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(AuthController.class)
 @AutoConfigureMockMvc(addFilters = false) // disable Spring Security filters for simplicity
+@Import(TestConfig.class)
 class AuthControllerTest {
 
     @Autowired
