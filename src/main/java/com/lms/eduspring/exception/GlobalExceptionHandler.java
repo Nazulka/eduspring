@@ -17,15 +17,16 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(SecurityException.class)
-    public ResponseEntity<?> handleSecurity(SecurityException ex) {
+    public ResponseEntity<?> handleSecurityException(SecurityException ex) {
+        String message = ex.getMessage() != null ? ex.getMessage() : "Access denied";
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(Map.of("error", ex.getMessage()));
+                .body(Map.of("error", message));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> handleGeneric(Exception ex) {
-        ex.printStackTrace(); // optional: keep this for debugging
+    public ResponseEntity<?> handleGenericException(Exception ex) {
+        String message = ex.getMessage() != null ? ex.getMessage() : "Unexpected error";
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "An unexpected error occurred"));
+                .body(Map.of("error", message));
     }
 }
