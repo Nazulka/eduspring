@@ -34,6 +34,7 @@ public class ChatController {
         this.userService = userService;
     }
 
+    // Handle user messages and start a session if needed
     @PostMapping("/message")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> handleChatMessage(
@@ -48,13 +49,26 @@ public class ChatController {
         ));
     }
 
-    @GetMapping("/{sessionId}")
+    // Fetch all sessions for a user
+    @GetMapping("/sessions")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> getChatMessages(@PathVariable Long sessionId) {
-        List<ChatMessage> messages = chatService.getMessages(sessionId);
+    public ResponseEntity<?> getUserSessions(@RequestParam Long userId) {
+        List<ChatSession> sessions = chatService.getSessionsForUser(userId);
+        return ResponseEntity.ok(Map.of("sessions", sessions));
+    }
+
+    // Fetch messages for a given session
+    @GetMapping("/sessions/{sessionId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> getSessionMessages(
+            @RequestParam Long userId,
+            @PathVariable Long sessionId
+    ) {
+        List<ChatMessage> messages = chatService.getMessagesForUserSession(userId, sessionId);
         return ResponseEntity.ok(Map.of("messages", messages));
     }
 
+    // Ask OpenAI, persist both sides of the conversation
     @PostMapping("/ask")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> askOpenAi(
@@ -65,7 +79,6 @@ public class ChatController {
         ChatSession session = chatService.processUserMessage(userId, sessionId, message);
 
         String openAiUrl = "https://api.openai.com/v1/chat/completions";
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(openAiApiKey);
@@ -91,22 +104,5 @@ public class ChatController {
                 "userMessage", message,
                 "aiReply", aiReply
         ));
-    }
-
-    @GetMapping("/sessions")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> getUserSessions(@RequestParam Long userId) {
-        List<ChatSession> sessions = chatService.getSessionsForUser(userId);
-        return ResponseEntity.ok(Map.of("sessions", sessions));
-    }
-
-    @GetMapping("/sessions/{sessionId}")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> getSessionMessages(
-            @RequestParam Long userId,
-            @PathVariable Long sessionId
-    ) {
-        List<ChatMessage> messages = chatService.getMessagesForUserSession(userId, sessionId);
-        return ResponseEntity.ok(Map.of("messages", messages));
     }
 }
