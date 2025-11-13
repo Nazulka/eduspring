@@ -7,15 +7,18 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.stereotype.Component;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.lms.eduspring")
+@EntityScan(basePackages = "com.lms.eduspring.model")
+@EnableJpaRepositories(basePackages = "com.lms.eduspring.repository")
 public class EduspringApplication implements CommandLineRunner {
 
 	@Value("${JWT_SECRET:NOT_FOUND}")
 	private String jwtSecret;
 
-	// ✅ Marked as optional so tests won’t fail if it's missing
 	@Autowired(required = false)
 	private UserService userService;
 
@@ -25,8 +28,6 @@ public class EduspringApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-
-		// ✅ Only run initialization when the real UserService is available
 		if (userService != null) {
 			User user = new User(
 					"student1",
@@ -36,18 +37,16 @@ public class EduspringApplication implements CommandLineRunner {
 					"alice@example.com",
 					"STUDENT"
 			);
-
 			userService.registerUser(user);
-			System.out.println("Test user registered: " + user.getUsername());
+			System.out.println("✅ Test user registered: " + user.getUsername());
 		} else {
-			System.out.println("Skipping user initialization (UserService not loaded in test context).");
+			System.out.println("⚠️ Skipping user initialization (UserService not loaded in test context).");
 		}
 	}
 
-//	remove later for prod
+	// Temporary for debugging — remove in prod
 	@Component
 	public class PropertyDebugRunner implements CommandLineRunner {
-
 		@Value("${JWT_SECRET:NOT_FOUND}")
 		private String jwtSecret;
 
@@ -61,5 +60,3 @@ public class EduspringApplication implements CommandLineRunner {
 		}
 	}
 }
-
-
