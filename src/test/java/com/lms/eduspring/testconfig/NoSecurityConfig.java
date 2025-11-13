@@ -11,7 +11,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class NoSecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable()) // ✅ new lambda syntax — no deprecation
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll()); // allow all
