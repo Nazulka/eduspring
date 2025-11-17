@@ -1,7 +1,11 @@
 package com.lms.eduspring.service;
 
-import com.lms.eduspring.model.*;
-import com.lms.eduspring.repository.*;
+import com.lms.eduspring.model.ChatMessage;
+import com.lms.eduspring.model.ChatSession;
+import com.lms.eduspring.model.User;
+import com.lms.eduspring.repository.ChatMessageRepository;
+import com.lms.eduspring.repository.ChatSessionRepository;
+import com.lms.eduspring.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,8 +25,12 @@ public class ChatService {
         this.userRepository = userRepository;
     }
 
+    // ----------------------------
+    // Save USER messages
+    // ----------------------------
     public ChatSession processUserMessage(Long userId, Long chatSessionId, String userMessage) {
         ChatSession session;
+
         if (chatSessionId == null) {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -35,14 +43,41 @@ public class ChatService {
 
         ChatMessage userMsg = new ChatMessage("user", userMessage);
         session.addMessage(userMsg);
-
         chatSessionRepository.save(session);
+
         return session;
     }
 
+    // ----------------------------
+    // Save AI messages
+    // ----------------------------
+    public ChatSession processAiMessage(Long sessionId, String aiReply) {
+        ChatSession session = chatSessionRepository.findById(sessionId)
+                .orElseThrow(() -> new IllegalArgumentException("Chat session not found"));
+
+        ChatMessage aiMsg = new ChatMessage("ai", aiReply);
+        session.addMessage(aiMsg);
+
+        chatSessionRepository.save(session);
+
+        return session;
+    }
+
+    // ----------------------------
+    // FIXED TITLE GENERATOR
+    // ----------------------------
     private String generateTitle(String message) {
-        if (message == null || message.isBlank()) return "New Chat";
-        return message.length() > 30 ? message.substring(0, 30) + "..." : message;
+        if (message == null || message.isBlank()) {
+            return "New Chat";
+        }
+
+        // Trim and clean whitespace
+        String cleaned = message.trim().replaceAll("\\s+", " ");
+
+        // Take first 40 chars for nicer preview titles
+        return cleaned.length() > 40
+                ? cleaned.substring(0, 40) + "..."
+                : cleaned;
     }
 
     public List<ChatMessage> getMessages(Long sessionId) {
@@ -67,5 +102,4 @@ public class ChatService {
 
         return session.getMessages();
     }
-
 }

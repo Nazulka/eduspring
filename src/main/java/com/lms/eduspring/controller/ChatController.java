@@ -35,7 +35,7 @@ public class ChatController {
         this.userService = userService;
     }
 
-    // Handle user messages and start a session if needed
+    // Handle user messages
     @PostMapping("/message")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> handleChatMessage(
@@ -69,7 +69,7 @@ public class ChatController {
         return ResponseEntity.ok(Map.of("messages", messages));
     }
 
-    // Ask OpenAI, persist both sides of the conversation
+    // Ask OpenAI and save both user and AI messages
     @PostMapping("/ask")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> askOpenAi(
@@ -77,8 +77,10 @@ public class ChatController {
             @RequestParam(required = false) Long sessionId,
             @RequestParam String message
     ) {
+        // 1. Save the USER message
         ChatSession session = chatService.processUserMessage(userId, sessionId, message);
 
+        // 2. Prepare OpenAI request
         String openAiUrl = "https://api.openai.com/v1/chat/completions";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -98,12 +100,13 @@ public class ChatController {
                 .get("message"))
                 .get("content");
 
-        chatService.processUserMessage(userId, session.getId(), aiReply);
+        // 3. Save the AI message with role = "ai"
+        chatService.processAiMessage(session.getId(), aiReply);
 
+        // 4. Return updated session messages
         return ResponseEntity.ok(Map.of(
                 "sessionId", session.getId(),
-                "userMessage", message,
-                "aiReply", aiReply
+                "messages", session.getMessages()
         ));
     }
 }
