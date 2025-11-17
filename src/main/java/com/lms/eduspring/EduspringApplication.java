@@ -14,34 +14,10 @@ import org.springframework.stereotype.Component;
 @SpringBootApplication(scanBasePackages = "com.lms.eduspring")
 @EntityScan(basePackages = "com.lms.eduspring.model")
 @EnableJpaRepositories(basePackages = "com.lms.eduspring.repository")
-public class EduspringApplication implements CommandLineRunner {
-
-	@Value("${JWT_SECRET:NOT_FOUND}")
-	private String jwtSecret;
-
-	@Autowired(required = false)
-	private UserService userService;
+public class EduspringApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(EduspringApplication.class, args);
-	}
-
-	@Override
-	public void run(String... args) throws Exception {
-		if (userService != null) {
-			User user = new User(
-					"student1",
-					"mypassword",
-					"Alice",
-					"Smith",
-					"alice@example.com",
-					"STUDENT"
-			);
-			userService.registerUser(user);
-			System.out.println("✅ Test user registered: " + user.getUsername());
-		} else {
-			System.out.println("⚠️ Skipping user initialization (UserService not loaded in test context).");
-		}
 	}
 
 	// Temporary for debugging — remove in prod
