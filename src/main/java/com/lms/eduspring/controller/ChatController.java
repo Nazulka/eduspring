@@ -13,7 +13,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
-
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/chat")
@@ -35,7 +34,6 @@ public class ChatController {
         this.userService = userService;
     }
 
-    // Handle user messages
     @PostMapping("/message")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> handleChatMessage(
@@ -50,7 +48,6 @@ public class ChatController {
         ));
     }
 
-    // Fetch all sessions for a user
     @GetMapping("/sessions")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> getUserSessions(@RequestParam Long userId) {
@@ -58,7 +55,6 @@ public class ChatController {
         return ResponseEntity.ok(Map.of("sessions", sessions));
     }
 
-    // Fetch messages for a given session
     @GetMapping("/sessions/{sessionId}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> getSessionMessages(
@@ -69,7 +65,6 @@ public class ChatController {
         return ResponseEntity.ok(Map.of("messages", messages));
     }
 
-    // Ask OpenAI and save both user and AI messages
     @PostMapping("/ask")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> askOpenAi(
@@ -77,10 +72,10 @@ public class ChatController {
             @RequestParam(required = false) Long sessionId,
             @RequestParam String message
     ) {
-        // 1. Save the USER message
+        // 1. Save user message
         ChatSession session = chatService.processUserMessage(userId, sessionId, message);
 
-        // 2. Prepare OpenAI request
+        // 2. Call OpenAI
         String openAiUrl = "https://api.openai.com/v1/chat/completions";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -100,12 +95,13 @@ public class ChatController {
                 .get("message"))
                 .get("content");
 
-        // 3. Save the AI message with role = "ai"
+        // 3. Save AI message
         chatService.processAiMessage(session.getId(), aiReply);
 
-        // 4. Return updated session messages
+        // 4. ***Return aiReply so React receives it***
         return ResponseEntity.ok(Map.of(
                 "sessionId", session.getId(),
+                "aiReply", aiReply,      // <--- FIXED
                 "messages", session.getMessages()
         ));
     }
