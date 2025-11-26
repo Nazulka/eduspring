@@ -1,25 +1,31 @@
 package com.lms.eduspring.service;
 
 import com.lms.eduspring.model.User;
+
 import java.util.List;
 
 public interface UserService {
 
-    // Registers a new user with hashed password
+    // register new user
     void registerUser(User user);
 
-    // Finds user by username
+    // find user by username
     User findByUsername(String username);
 
-    // Verifies login credentials (username + raw password)
-    boolean verifyLogin(String username, String rawPassword);
-
-    // === NEW METHODS for UserController ===
-    List<User> getAllUsers();
-
+    // get user by ID
     User getUserById(Long id);
 
+    // update user
     User updateUser(Long id, User updatedUser);
 
+    // delete user
     void deleteUser(Long id);
+
+    // get all users
+    List<User> getAllUsers();
+
+    // get current user ID from JWT
+    Long getCurrentUserId();
+
+    boolean verifyLogin(String username, String password);
 }
