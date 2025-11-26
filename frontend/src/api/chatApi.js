@@ -1,15 +1,15 @@
-const BASE_URL = "http://localhost:8081/api/chat";
+const BASE_URL = "http://localhost:8081/api";
 
-export async function fetchChatSessions(userId) {
-  const res = await fetch(`${BASE_URL}/sessions?userId=${userId}`);
-  if (!res.ok) throw new Error("Failed to load chat sessions");
-  const data = await res.json();
-  return data.sessions;
+// Load all conversations for the logged-in user
+export async function fetchChatSessions() {
+  const res = await fetch(`${BASE_URL}/conversations`);
+  if (!res.ok) throw new Error("Failed to load conversations");
+  return await res.json();  // already an array of conversation DTOs
 }
 
-export async function fetchSessionMessages(userId, sessionId) {
-  const res = await fetch(`${BASE_URL}/sessions/${sessionId}?userId=${userId}`);
-  if (!res.ok) throw new Error("Failed to load session messages");
-  const data = await res.json();
-  return data.messages;
+// Load all messages in a conversation
+export async function fetchSessionMessages(conversationId) {
+  const res = await fetch(`${BASE_URL}/conversations/${conversationId}`);
+  if (!res.ok) throw new Error("Failed to load conversation messages");
+  return await res.json(); // has { id, title, messages: [...] }
 }

@@ -1,97 +1,93 @@
 import React, { useEffect, useRef, useState } from "react";
 import api from "../api/axiosInstance";
-import { useAuth } from "../context/AuthContext";
 import "./Chat.css";
 
-export default function Chat({ sessionId }) {
-  const { user } = useAuth();
+export default function Chat({ sessionId, onSessionUpdate }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [activeSessionId, setActiveSessionId] = useState(sessionId || null);
+  const [activeConversationId, setActiveConversationId] = useState(sessionId || null);
   const chatEndRef = useRef(null);
 
-  // Auto-scroll when messages change
+  // Auto-scroll
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Load previous messages when a chat session is selected from sidebar
+  // Load messages when a conversation is selected
   useEffect(() => {
-    if (!sessionId || !user) return;
+    if (!sessionId) return;
+
     const loadMessages = async () => {
       try {
-        const res = await api.get(`/chat/sessions/${sessionId}?userId=${user.id}`);
-        setMessages(
-          res.data.messages.map((m) => ({
-            sender: m.role === "user" ? "user" : "bot",
-            text: m.content,
-            time: new Date(m.timestamp || Date.now()).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-          }))
-        );
-        setActiveSessionId(sessionId);
+        const res = await api.get(`/conversations/${sessionId}`);
+        const data = res.data;
+
+        const mapped = (data.messages || []).map((m) => ({
+          sender: m.role === "user" ? "user" : "bot",
+          text: m.content,
+          time: new Date(m.createdAt).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        }));
+
+        setMessages(mapped);
+        setActiveConversationId(sessionId);
       } catch (err) {
         console.error("Failed to load messages:", err);
       }
     };
-    loadMessages();
-  }, [sessionId, user]);
 
-  // Send a message (and get AI reply)
+    loadMessages();
+  }, [sessionId]);
+
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!input.trim() || !user) {
-      console.log("Stopped: missing input or user", { input, user });
-      return;
-    }
+    if (!input.trim()) return;
 
-    const newMessage = {
+    const newMsg = {
       sender: "user",
       text: input,
-      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     };
 
-    setMessages((prev) => [...prev, newMessage]);
+    setMessages(prev => [...prev, newMsg]);
     setInput("");
     setLoading(true);
 
     try {
-      const response = await api.post(
-        `/chat/ask?userId=${user.id}&sessionId=${activeSessionId || ""}&message=${encodeURIComponent(input)}`
-      );
+      const res = await api.post("", {
+        conversationId: activeConversationId,
+        message: newMsg.text,
+      });
 
-      // Store sessionId returned by backend for reuse
-      if (!activeSessionId && response.data.sessionId) {
-        setActiveSessionId(response.data.sessionId);
-        console.log("Session established:", response.data.sessionId);
+      const returnedId = res.data.conversationId;
+
+      if (!activeConversationId && returnedId) {
+        setActiveConversationId(returnedId);
+        onSessionUpdate?.();
       }
 
-      const reply = response.data.aiReply || "AI did not respond.";
-
-      const botMessage = {
+      const botMsg = {
         sender: "bot",
-        text: reply,
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        text: res.data.reply,
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
       };
 
-      setMessages((prev) => [...prev, botMessage]);
-    } catch (error) {
-      console.error("Chat error:", error);
-      setMessages((prev) => [
-        ...prev,
-        {
-          sender: "bot",
-          text: "Could not reach the chat service.",
-          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        },
-      ]);
+      setMessages(prev => [...prev, botMsg]);
+    } catch (err) {
+      console.error("Chat error:", err);
+      setMessages(prev => [...prev, {
+        sender: "bot",
+        text: "Could not reach chat service.",
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      }]);
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="chat-container">

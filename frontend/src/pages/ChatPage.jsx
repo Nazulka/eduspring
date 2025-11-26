@@ -6,10 +6,14 @@ import "../components/Chat.css";
 export default function ChatPage() {
   const [activeSessionId, setActiveSessionId] = useState(null);
 
+  const handleSessionUpdate = () => {
+    setActiveSessionId((prev) => prev);
+  };
+
   return (
     <div className="chat-layout">
       <ChatSidebar onSelectSession={setActiveSessionId} />
-      <Chat sessionId={activeSessionId} />
+      <Chat sessionId={activeSessionId} onSessionUpdate={handleSessionUpdate} />
     </div>
   );
 }

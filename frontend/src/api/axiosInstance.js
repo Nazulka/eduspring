@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:8081/api",
-  headers: { "Content-Type": "application/json" },
+  baseURL: "http://localhost:8081/api/chat",
+  withCredentials: true,
 });
 
 api.interceptors.request.use((config) => {

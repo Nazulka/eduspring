@@ -17,20 +17,9 @@ const ChatSidebar = ({ onSelectSession }) => {
 
     const fetchSessions = async () => {
       try {
-        const res = await api.get(`/chat/sessions?userId=${user.id}`);
-        console.log("Fetched sessions:", res.data);
-
-        // Handle both cases — wrapped or plain array
-        const data = Array.isArray(res.data)
-          ? res.data
-          : res.data?.sessions || [];
-
-        if (!Array.isArray(data)) {
-          console.warn("Unexpected sessions response:", data);
-          setSessions([]);
-        } else {
-          setSessions(data);
-        }
+        const res = await api.get("/conversations");
+        const data = Array.isArray(res.data) ? res.data : [];
+        setSessions(data);
       } catch (err) {
         console.error("Failed to load chat sessions:", err);
         setError("Failed to load chat sessions");
