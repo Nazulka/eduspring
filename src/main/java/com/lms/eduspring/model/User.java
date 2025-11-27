@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -42,24 +44,33 @@ public class User {
     private String email;
 
     @Column(nullable = false)
-    private String role; // e.g., STUDENT, TEACHER, ADMIN
+    private String role;
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_course",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "course_id")
+    )
+    private Set<Course> enrolledCourses;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    // --- Constructors ---
+
     public User() {
-        // Default constructor required by JPA
+
     }
 
     public User(String username, String password, String firstName,
-                String lastName, String email, String role) {
+                String lastName, String email, String role, Set<Course> enrolledCourses) {
         this.username = username;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.role = role;
+        this.enrolledCourses=enrolledCourses;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -90,5 +101,8 @@ public class User {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public Set<Course> getEnrolledCourses() { return enrolledCourses; }
+    public void setEnrolledCourses(Set<Course> enrolledCourses) {this.enrolledCourses = enrolledCourses; }
 }
 
