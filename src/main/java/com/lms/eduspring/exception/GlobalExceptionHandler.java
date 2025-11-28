@@ -29,4 +29,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", message));
     }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+        public ResponseEntity<?> handleResourceNotFound(ResourceNotFoundException ex) {
+            String message = ex.getMessage() != null ? ex.getMessage() : "Not Found";
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", message));
+
+    }
 }
