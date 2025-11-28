@@ -1,5 +1,6 @@
 package com.lms.eduspring.service;
 
+import com.lms.eduspring.exception.ResourceNotFoundException;
 import com.lms.eduspring.model.Course;
 import com.lms.eduspring.model.Section;
 import com.lms.eduspring.repository.CourseRepository;
@@ -20,7 +21,7 @@ public class CourseService {
 
     public Course getCourseOrThrow(Long id) {
         return courseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Course not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + id));
     }
 
     public List<Course> getAllCourses() {
