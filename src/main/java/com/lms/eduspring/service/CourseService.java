@@ -1,5 +1,7 @@
 package com.lms.eduspring.service;
 
+import com.lms.eduspring.dto.CourseDTO;
+import com.lms.eduspring.dto.SectionDTO;
 import com.lms.eduspring.exception.ResourceNotFoundException;
 import com.lms.eduspring.model.Course;
 import com.lms.eduspring.model.Section;
@@ -24,12 +26,37 @@ public class CourseService {
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + id));
     }
 
-    public List<Course> getAllCourses() {
-        return courseRepository.findAll();
+    // ---- DTO versions ----
+
+    public List<CourseDTO> getAllCourses() {
+        return courseRepository.findAll()
+                .stream()
+                .map(this::mapCourseToDTO)
+                .toList();
     }
 
-    public List<Section> getSectionsForCourse(Long id) {
+    public List<SectionDTO> getSectionsForCourse(Long id) {
         Course course = getCourseOrThrow(id);
-        return course.getSections();
+        return course.getSections()
+                .stream()
+                .map(this::mapSectionToDTO)
+                .toList();
+    }
+
+    // ---- Mappers ----
+
+    private CourseDTO mapCourseToDTO(Course course) {
+        return new CourseDTO(
+                course.getId(),
+                course.getTitle(),
+                course.getDescription()
+        );
+    }
+
+    private SectionDTO mapSectionToDTO(Section section) {
+        return new SectionDTO(
+                section.getId(),
+                section.getContent()
+        );
     }
 }
