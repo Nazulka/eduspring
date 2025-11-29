@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Set;
 
 
 @RestController
@@ -36,7 +37,8 @@ public class AuthController {
                     dto.getFirstName(),
                     dto.getLastName(),
                     dto.getEmail(),
-                    "STUDENT"
+                    "STUDENT",
+                    Set.of()
             );
             userService.registerUser(user);
             // ✅ Return proper JSON object instead of a string literal

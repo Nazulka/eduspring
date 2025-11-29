@@ -70,7 +70,7 @@ public class User {
         this.lastName = lastName;
         this.email = email;
         this.role = role;
-        this.enrolledCourses=enrolledCourses;
+        this.enrolledCourses = enrolledCourses;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }

@@ -1,7 +1,7 @@
 package com.lms.eduspring.controller;
 
-import com.lms.eduspring.model.Course;
-import com.lms.eduspring.model.Section;
+import com.lms.eduspring.dto.CourseDTO;
+import com.lms.eduspring.dto.SectionDTO;
 import com.lms.eduspring.service.CourseService;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,16 +18,14 @@ import java.util.List;
         }
 
         @GetMapping
-        public List<Course> getAllCourses() {
+        public List<CourseDTO> getAllCourses() {
             return courseService.getAllCourses();
         }
 
-
         @GetMapping("/{id}/sections")
-        public List<Section> getCourseSections(@PathVariable Long id) {
+        public List<SectionDTO> getCourseSections(@PathVariable Long id) {
             return courseService.getSectionsForCourse(id);
         }
-
     }
 
 

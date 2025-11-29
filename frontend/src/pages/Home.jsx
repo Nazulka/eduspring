@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <div className="home-container">
       <h1>Welcome to EduSpring 🎓</h1>
-      <p>Your personalized learning platform.</p>
+      <p>Your personalised learning platform.</p>
 
       <div className="auth-section">
         <p>If you already have an account, please <Link to="/login" className="nav-link">log in</Link>.</p>
