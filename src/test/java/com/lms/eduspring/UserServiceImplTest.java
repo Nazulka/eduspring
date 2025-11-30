@@ -11,6 +11,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
+import java.util.Set;
 
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,7 +35,7 @@ class UserServiceImplTest {
     @Test
     void registerUser_ShouldSaveUser_WhenUsernameIsUnique() {
 
-        User user = new User("newUser", "plainPass", "John", "Doe", "john@example.com", "STUDENT");
+        User user = new User("newUser", "plainPass", "John", "Doe", "john@example.com", "STUDENT",  Set.of());
         when(userRepository.findByUsername("newUser")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("plainPass")).thenReturn("hashedPass");
 
@@ -53,7 +54,9 @@ class UserServiceImplTest {
                 "Jane",
                 "Smith",
                 "jane@example.com",
-                "STUDENT");
+                "STUDENT",
+                Set.of()
+        );
 
         when(userRepository.findByUsername("existingUser")).thenReturn(Optional.of(user));
 
@@ -64,7 +67,7 @@ class UserServiceImplTest {
 
     @Test
     void findByUsername_ShouldReturnUser_WhenUserExists() {
-        User user = new User("alice", "hash", "Alice", "Brown", "alice@example.com", "STUDENT");
+        User user = new User("alice", "hash", "Alice", "Brown", "alice@example.com", "STUDENT", Set.of());
         when(userRepository.findByUsername("alice")).thenReturn(Optional.of(user));
 
         User found = userService.findByUsername("alice");
@@ -87,7 +90,7 @@ class UserServiceImplTest {
 
     @Test
     void verifyLogin_ShouldReturnTrue_WhenPasswordMatches() {
-        User user = new User("bob", "hashed", "Bob", "Lee", "bob@example.com", "STUDENT");
+        User user = new User("bob", "hashed", "Bob", "Lee", "bob@example.com", "STUDENT", Set.of());
         when(userRepository.findByUsername("bob")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("rawPass", "hashed")).thenReturn(true);
 
@@ -98,7 +101,7 @@ class UserServiceImplTest {
 
     @Test
     void verifyLogin_ShouldReturnFalse_WhenPasswordDoesNotMatch() {
-        User user = new User("bob", "hashed", "Bob", "Lee", "bob@example.com", "STUDENT");
+        User user = new User("bob", "hashed", "Bob", "Lee", "bob@example.com", "STUDENT", Set.of());
         when(userRepository.findByUsername("bob")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("wrongPass", "hashed")).thenReturn(false);
 

@@ -1,13 +1,12 @@
 package com.lms.eduspring.controller;
 
+import com.lms.eduspring.config.TestSecurityConfig;
 import com.lms.eduspring.model.ChatMessage;
 import com.lms.eduspring.model.ChatSession;
 import com.lms.eduspring.service.ChatService;
 import com.lms.eduspring.service.UserService;
 import com.lms.eduspring.security.JwtAuthFilter;
 import com.lms.eduspring.service.JwtService;
-
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -27,11 +26,19 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(ChatController.class)
+@WebMvcTest(controllers = ChatController.class)
 @AutoConfigureMockMvc(addFilters = false)
-@Import(ChatControllerTest.TestSecurityExceptionAdvice.class)
-@Disabled
+@Import({ChatControllerTest.TestSecurityExceptionAdvice.class, TestSecurityConfig.class})
+//@ImportAutoConfiguration(exclude = {
+//        org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class,
+//        org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration.class,
+//        org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration.class,
+//        org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration.class,
+//        org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration.class,
+//        org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration.class
+//})
 class ChatControllerTest {
+
 
     @Autowired
     private MockMvc mockMvc;
