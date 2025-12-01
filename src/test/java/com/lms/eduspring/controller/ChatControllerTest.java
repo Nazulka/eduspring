@@ -1,6 +1,5 @@
 package com.lms.eduspring.controller;
 
-import com.lms.eduspring.config.TestSecurityConfig;
 import com.lms.eduspring.model.ChatMessage;
 import com.lms.eduspring.model.ChatSession;
 import com.lms.eduspring.service.ChatService;
@@ -28,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = ChatController.class)
 @AutoConfigureMockMvc(addFilters = false)
-@Import({ChatControllerTest.TestSecurityExceptionAdvice.class, TestSecurityConfig.class})
+@Import(ChatControllerTest.TestSecurityExceptionAdvice.class)
 //@ImportAutoConfiguration(exclude = {
 //        org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class,
 //        org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration.class,

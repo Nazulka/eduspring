@@ -1,9 +1,9 @@
 package com.lms.eduspring.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lms.eduspring.config.TestSecurityConfig;
 import com.lms.eduspring.dto.LoginRequestDto;
 import com.lms.eduspring.dto.UserRegistrationDto;
+import com.lms.eduspring.exception.GlobalExceptionHandler;
 import com.lms.eduspring.model.User;
 import com.lms.eduspring.service.JwtService;
 import com.lms.eduspring.service.UserService;
@@ -25,7 +25,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = AuthController.class)
 @AutoConfigureMockMvc(addFilters = false)
-@Import({TestSecurityConfig.class})
+@Import(GlobalExceptionHandler.class)
+
 class AuthControllerTest {
 
     @Autowired
