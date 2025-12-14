@@ -5,6 +5,9 @@ import "./Chat.css";
 
 const ChatSidebar = ({ onSelectSession }) => {
   const { user } = useAuth();
+  useEffect(() => {
+      console.log("ChatSidebar mounted");
+    }, []);
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -12,6 +15,8 @@ const ChatSidebar = ({ onSelectSession }) => {
   useEffect(() => {
     if (!user) {
       setLoading(false);
+        console.log("Fetching conversations...");
+
       return;
     }
 

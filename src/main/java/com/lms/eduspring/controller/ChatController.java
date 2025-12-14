@@ -1,5 +1,6 @@
 package com.lms.eduspring.controller;
 
+import com.lms.eduspring.dto.ConversationDto;
 import com.lms.eduspring.model.ChatMessage;
 import com.lms.eduspring.model.ChatSession;
 import com.lms.eduspring.service.ChatService;
@@ -41,11 +42,13 @@ public class ChatController {
     // 1️⃣ List conversations (supports test override)
     @GetMapping("/conversations")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<ChatSession>> getAllConversations(
+    public ResponseEntity<List<ConversationDto>> getAllConversations(
             @RequestParam(required = false) Long userId
     ) {
         Long resolvedUser = (userId != null) ? userId : getCurrentUserId();
-        return ResponseEntity.ok(chatService.getSessionsForUser(resolvedUser));
+        return ResponseEntity.ok(
+                chatService.getConversationDtosForUser(resolvedUser)
+        );
     }
 
     // 2️⃣ Get messages for conversation (supports test override)

@@ -1,5 +1,6 @@
 package com.lms.eduspring.service;
 
+import com.lms.eduspring.dto.ConversationDto;
 import com.lms.eduspring.model.ChatMessage;
 import com.lms.eduspring.model.ChatSession;
 import com.lms.eduspring.model.User;
@@ -80,5 +81,16 @@ public class ChatServiceImpl implements ChatService {
         }
 
         return session.getMessages();
+    }
+
+    @Override
+    public List<ConversationDto> getConversationDtosForUser(Long userId) {
+        return getSessionsForUser(userId).stream()
+                .map(session -> new ConversationDto(
+                        session.getId(),
+                        session.getTitle(),
+                        session.getCreatedAt()
+                ))
+                .toList();
     }
 }

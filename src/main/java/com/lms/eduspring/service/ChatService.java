@@ -1,5 +1,6 @@
 package com.lms.eduspring.service;
 
+import com.lms.eduspring.dto.ConversationDto;
 import com.lms.eduspring.model.ChatMessage;
 import com.lms.eduspring.model.ChatSession;
 
@@ -14,4 +15,11 @@ public interface ChatService {
     List<ChatSession> getSessionsForUser(Long userId);
 
     List<ChatMessage> getMessagesForUserSession(Long userId, Long conversationId);
+
+    List<ConversationDto> getConversationDtosForUser(Long userId);
+
 }
+
+
+
+
