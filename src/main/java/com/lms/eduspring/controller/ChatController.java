@@ -1,5 +1,6 @@
 package com.lms.eduspring.controller;
 
+import com.lms.eduspring.dto.ConversationDetailDto;
 import com.lms.eduspring.dto.ConversationDto;
 import com.lms.eduspring.model.ChatMessage;
 import com.lms.eduspring.model.ChatSession;
@@ -54,21 +55,16 @@ public class ChatController {
     // 2️⃣ Get messages for conversation (supports test override)
     @GetMapping("/conversations/{conversationId}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Map<String, Object>> getConversationMessages(
+    public ResponseEntity<ConversationDetailDto> getConversation(
             @PathVariable Long conversationId,
             @RequestParam(required = false) Long userId
     ) {
         Long resolvedUser = (userId != null) ? userId : getCurrentUserId();
-
-        List<ChatMessage> messages =
-                chatService.getMessagesForUserSession(resolvedUser, conversationId);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("id", conversationId);
-        response.put("messages", messages);
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(
+                chatService.getConversationDetail(resolvedUser, conversationId)
+        );
     }
+
 
     // 3️⃣ Send message → save user → AI → save AI
     @PostMapping

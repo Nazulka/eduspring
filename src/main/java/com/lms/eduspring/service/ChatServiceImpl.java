@@ -1,6 +1,8 @@
 package com.lms.eduspring.service;
 
+import com.lms.eduspring.dto.ConversationDetailDto;
 import com.lms.eduspring.dto.ConversationDto;
+import com.lms.eduspring.dto.MessageDto;
 import com.lms.eduspring.model.ChatMessage;
 import com.lms.eduspring.model.ChatSession;
 import com.lms.eduspring.model.User;
@@ -63,11 +65,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public List<ChatSession> getSessionsForUser(Long userId) {
-
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
-        return sessionRepo.findByUser(user);
+        return sessionRepo.findByUser_Id(userId);
     }
 
     @Override
@@ -92,5 +90,26 @@ public class ChatServiceImpl implements ChatService {
                         session.getCreatedAt()
                 ))
                 .toList();
+    }
+
+    @Override
+    public ConversationDetailDto getConversationDetail(Long userId, Long conversationId) {
+
+        ChatSession session = sessionRepo
+                .findByIdAndUser_Id(conversationId, userId)
+                .orElseThrow(() -> new RuntimeException("Conversation not found"));
+
+        return new ConversationDetailDto(
+                session.getId(),
+                session.getTitle(),
+                session.getCreatedAt(),
+                session.getMessages().stream()
+                        .map(m -> new MessageDto(
+                                m.getRole(),
+                                m.getContent(),
+                                m.getCreatedAt()
+                        ))
+                        .toList()
+        );
     }
 }
