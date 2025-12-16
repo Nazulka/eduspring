@@ -1,0 +1,17 @@
+.markdown {
+  line-height: 1.6;
+  font-size: 16px;
+}
+
+.markdown h1,
+.markdown h2,
+.markdown h3 {
+  margin-top: 1.5rem;
+}
+
+.markdown pre {
+  background: #f6f8fa;
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+}
