@@ -59,4 +59,13 @@ public class CourseService {
                 section.getContent()
         );
     }
+
+    public SectionDTO getSectionById(Long sectionId) {
+        Section section = courseRepository.findSectionById(sectionId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Section not found with id: " + sectionId)
+                );
+
+        return mapSectionToDTO(section);
+    }
 }
