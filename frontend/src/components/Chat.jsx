@@ -2,25 +2,31 @@ import React, { useEffect, useRef, useState } from "react";
 import api from "../api/axiosInstance";
 import "./Chat.css";
 
-export default function Chat({ sessionId, onSessionUpdate }) {
+export default function Chat({ sectionId, sessionId, onSessionUpdate }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [activeConversationId, setActiveConversationId] = useState(sessionId || null);
   const chatEndRef = useRef(null);
 
+  // Keep session in sync when section changes
+  useEffect(() => {
+    setActiveConversationId(sessionId || null);
+    setMessages([]);
+  }, [sectionId, sessionId]);
+
   // Auto-scroll
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Load messages when a conversation is selected
+  // Load messages for existing session (per section)
   useEffect(() => {
-    if (!sessionId) return;
+    if (!sectionId || !activeConversationId) return;
 
     const loadMessages = async () => {
       try {
-        const res = await api.get(`/conversations/${sessionId}`);
+        const res = await api.get(`/chat/conversations/${activeConversationId}`);
         const data = res.data;
 
         const mapped = (data.messages || []).map((m) => ({
@@ -33,66 +39,90 @@ export default function Chat({ sessionId, onSessionUpdate }) {
         }));
 
         setMessages(mapped);
-        setActiveConversationId(sessionId);
       } catch (err) {
         console.error("Failed to load messages:", err);
       }
     };
 
     loadMessages();
-  }, [sessionId]);
+  }, [sectionId, activeConversationId]);
 
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || !sectionId || loading) return;
 
-    const newMsg = {
+    const userMessage = {
       sender: "user",
       text: input,
-      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
     };
 
-    setMessages(prev => [...prev, newMsg]);
+    setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setLoading(true);
 
     try {
-      const res = await api.post("", {
+      const res = await api.post("/chat", {
         conversationId: activeConversationId,
-        message: newMsg.text,
+        sectionId,
+        message: userMessage.text,
       });
 
-      const returnedId = res.data.conversationId;
+      const returnedConversationId = res.data.conversationId;
 
-      if (!activeConversationId && returnedId) {
-        setActiveConversationId(returnedId);
+      // First message in this section → create session
+      if (!activeConversationId && returnedConversationId) {
+        setActiveConversationId(returnedConversationId);
         onSessionUpdate?.();
       }
 
-      const botMsg = {
-        sender: "bot",
-        text: res.data.reply,
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-      };
-
-      setMessages(prev => [...prev, botMsg]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: "bot",
+          text: res.data.reply,
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
+      ]);
     } catch (err) {
       console.error("Chat error:", err);
-      setMessages(prev => [...prev, {
-        sender: "bot",
-        text: "Could not reach chat service.",
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-      }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: "bot",
+          text: "Sorry, something went wrong. Please try again.",
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
+      ]);
     } finally {
       setLoading(false);
     }
   };
 
+  // No section selected
+  if (!sectionId) {
+    return (
+      <div className="chat-container empty">
+        <p className="placeholder">Select a section to start chatting</p>
+      </div>
+    );
+  }
 
   return (
     <div className="chat-container">
       <div className="chat-box">
-        {messages.length === 0 && <p className="placeholder">Start chatting below</p>}
+        {messages.length === 0 && (
+          <p className="placeholder">Ask a question about this section</p>
+        )}
 
         {messages.map((msg, index) => (
           <div
@@ -122,12 +152,12 @@ export default function Chat({ sessionId, onSessionUpdate }) {
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !loading) handleSend(e);
-          }}
-          placeholder="Type your message..."
+          placeholder="Ask about this section..."
           className="chat-input"
           disabled={loading}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSend(e);
+          }}
         />
         <button
           type="button"
