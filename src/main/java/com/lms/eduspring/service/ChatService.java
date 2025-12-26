@@ -21,6 +21,8 @@ public interface ChatService {
 
     ConversationDetailDto getConversationDetail(Long userId, Long conversationId);
 
+    String buildPromptForSection(Long sectionId, String userQuestion);
+
 
 }
 

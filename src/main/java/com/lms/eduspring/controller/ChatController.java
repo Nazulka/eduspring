@@ -66,7 +66,6 @@ public class ChatController {
     }
 
 
-    // 3️⃣ Send message → save user → AI → save AI
     @PostMapping
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Map<String, Object>> sendMessage(
@@ -79,13 +78,22 @@ public class ChatController {
         Long conversationId = payload.get("conversationId") == null ? null :
                 Long.valueOf(payload.get("conversationId").toString());
 
+        Long sectionId = payload.get("sectionId") == null ? null :
+                Long.valueOf(payload.get("sectionId").toString());
+
         String userMessage = payload.get("message").toString();
 
+        // 1️⃣ Save user message (creates session if needed)
         ChatSession session =
                 chatService.processUserMessage(resolvedUser, conversationId, userMessage);
 
-        String aiReply = callOpenAI(userMessage);
+        // 2️⃣ Build section-aware prompt (Week 11 core)
+        String prompt = chatService.buildPromptForSection(sectionId, userMessage);
 
+        // 3️⃣ Call OpenAI with section context
+        String aiReply = callOpenAI(prompt);
+
+        // 4️⃣ Save AI response
         chatService.processAiMessage(session.getId(), aiReply);
 
         Map<String, Object> response = new HashMap<>();
@@ -94,6 +102,7 @@ public class ChatController {
 
         return ResponseEntity.ok(response);
     }
+
 
     // OpenAI helper
     private String callOpenAI(String message) {

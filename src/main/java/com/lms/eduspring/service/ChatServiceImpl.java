@@ -5,9 +5,11 @@ import com.lms.eduspring.dto.ConversationDto;
 import com.lms.eduspring.dto.MessageDto;
 import com.lms.eduspring.model.ChatMessage;
 import com.lms.eduspring.model.ChatSession;
+import com.lms.eduspring.model.Section;
 import com.lms.eduspring.model.User;
 import com.lms.eduspring.repository.ChatMessageRepository;
 import com.lms.eduspring.repository.ChatSessionRepository;
+import com.lms.eduspring.repository.SectionRepository;
 import com.lms.eduspring.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -19,15 +21,23 @@ public class ChatServiceImpl implements ChatService {
     private final ChatSessionRepository sessionRepo;
     private final ChatMessageRepository messageRepo;
     private final UserRepository userRepo;
+    private final SectionRepository sectionRepo;
 
-    public ChatServiceImpl(ChatSessionRepository sessionRepo,
-                           ChatMessageRepository messageRepo,
-                           UserRepository userRepo) {
+    public ChatServiceImpl(
+            ChatSessionRepository sessionRepo,
+            ChatMessageRepository messageRepo,
+            UserRepository userRepo,
+            SectionRepository sectionRepo
+    ) {
         this.sessionRepo = sessionRepo;
         this.messageRepo = messageRepo;
         this.userRepo = userRepo;
+        this.sectionRepo = sectionRepo;
     }
 
+    /**
+     * Saves the user message and creates a chat session if needed
+     */
     @Override
     public ChatSession processUserMessage(Long userId, Long conversationId, String content) {
 
@@ -52,6 +62,9 @@ public class ChatServiceImpl implements ChatService {
         return session;
     }
 
+    /**
+     * Saves the AI response as a chat message
+     */
     @Override
     public void processAiMessage(Long conversationId, String content) {
 
@@ -61,6 +74,26 @@ public class ChatServiceImpl implements ChatService {
         ChatMessage msg = new ChatMessage("ai", content);
         session.addMessage(msg);
         sessionRepo.save(session);
+    }
+
+    /**
+     * Builds a section-aware AI prompt (Week 11 core logic)
+     */
+    @Override
+    public String buildPromptForSection(Long sectionId, String userQuestion) {
+
+        Section section = sectionRepo.findById(sectionId)
+                .orElseThrow(() -> new IllegalArgumentException("Section not found"));
+
+        return """
+                You are an AI tutor helping a student understand course material.
+
+                SECTION CONTENT:
+                %s
+
+                STUDENT QUESTION:
+                %s
+                """.formatted(section.getContent(), userQuestion);
     }
 
     @Override
