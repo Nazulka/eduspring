@@ -8,7 +8,7 @@ export default function ChatPage() {
   const [activeSessionId, setActiveSessionId] = useState(null);
   const [selectedSectionId, setSelectedSectionId] = useState(1);
 
-  // 🔑 IMPORTANT: reset chat session when section changes
+  // IMPORTANT: reset chat session when section changes
   useEffect(() => {
     setActiveSessionId(null);
   }, [selectedSectionId]);
