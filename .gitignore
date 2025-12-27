@@ -19,6 +19,7 @@ bin/
 
 ### IntelliJ IDEA ###
 .idea/
+compiler.xml
 *.iws
 *.iml
 *.ipr
