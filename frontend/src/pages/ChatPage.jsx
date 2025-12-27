@@ -5,20 +5,30 @@ import SectionContent from "../components/SectionContent";
 import "./LearningLayout.css";
 
 export default function ChatPage() {
+  const [selectedCourseId, setSelectedCourseId] = useState(null);
+  const [selectedSectionId, setSelectedSectionId] = useState(null);
   const [activeSessionId, setActiveSessionId] = useState(null);
-  const [selectedSectionId, setSelectedSectionId] = useState(1); // temp default
 
   return (
     <div className="learning-layout">
-      {/* Left: course + section navigation */}
+      {/* Left: Courses + Sections */}
       <aside className="learning-sidebar">
         <ChatSidebar
+          selectedCourseId={selectedCourseId}
+          onSelectCourse={(courseId) => {
+            setSelectedCourseId(courseId);
+            setSelectedSectionId(null);
+            setActiveSessionId(null);
+          }}
+          onSelectSection={(sectionId) => {
+            setSelectedSectionId(sectionId);
+            setActiveSessionId(null);
+          }}
           onSelectSession={setActiveSessionId}
-          onSelectSection={setSelectedSectionId}
         />
       </aside>
 
-      {/* Middle: section content */}
+      {/* Middle: Section content */}
       <main className="learning-content">
         <SectionContent sectionId={selectedSectionId} />
       </main>

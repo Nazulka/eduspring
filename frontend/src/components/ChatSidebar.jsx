@@ -3,75 +3,85 @@ import { useAuth } from "../context/AuthContext";
 import api from "../api/axiosInstance";
 import "./Chat.css";
 
-const COURSE_ID = 1; // Week 11: single course is enough
-
-const ChatSidebar = ({ onSelectSession, onSelectSection }) => {
+const ChatSidebar = ({
+  selectedCourseId,
+  onSelectCourse,
+  onSelectSection,
+  onSelectSession
+}) => {
   const { user } = useAuth();
 
+  const [courses, setCourses] = useState([]);
   const [sections, setSections] = useState([]);
   const [sessions, setSessions] = useState([]);
 
-  // Load sections for the course
+  /* Load all courses */
   useEffect(() => {
-    api
-      .get(`/courses/${COURSE_ID}/sections`)
-      .then((res) => {
-        if (Array.isArray(res.data)) {
-          setSections(res.data);
-        }
-      })
-      .catch((err) => {
-        console.warn("Failed to load sections (non-blocking)", err);
-      });
+    api.get("/courses")
+      .then(res => setCourses(res.data || []))
+      .catch(err => console.warn("Failed to load courses", err));
   }, []);
 
-  // Load previous chat sessions (optional)
+  /* Load sections when course changes */
+  useEffect(() => {
+    if (!selectedCourseId) {
+      setSections([]);
+      return;
+    }
+
+    api.get(`/courses/${selectedCourseId}/sections`)
+      .then(res => setSections(res.data || []))
+      .catch(err => console.warn("Failed to load sections", err));
+  }, [selectedCourseId]);
+
+  /* Load chat history (optional) */
   useEffect(() => {
     if (!user) return;
 
-    api
-      .get("/chat/conversations")
-      .then((res) => {
-        if (Array.isArray(res.data)) {
-          setSessions(res.data);
-        }
-      })
-      .catch((err) => {
-        console.warn("Chat history unavailable (non-blocking)", err);
-      });
+    api.get("/chat/conversations")
+      .then(res => setSessions(res.data || []))
+      .catch(() => {});
   }, [user]);
 
   return (
     <div className="sidebar">
-      {/* Course */}
-      <h3 className="sidebar-title">Course</h3>
-      <div className="sidebar-item active">
-        Java Basics
-      </div>
-
-      {/* Sections */}
-      <h4 className="sidebar-subtitle">Sections</h4>
+      {/* Courses */}
+      <h3 className="sidebar-title">Courses</h3>
       <ul className="sidebar-list">
-        {sections.length === 0 && (
-          <li className="muted">No sections available</li>
-        )}
-
-        {sections.map((section) => (
+        {courses.map(course => (
           <li
-            key={section.id}
-            onClick={() => onSelectSection(section.id)}
+            key={course.id}
+            className={course.id === selectedCourseId ? "active" : ""}
+            onClick={() => onSelectCourse(course.id)}
           >
-            Section {section.id}
+            {course.title}
           </li>
         ))}
       </ul>
 
-      {/* Previous Sessions (optional, non-blocking) */}
+      {/* Sections */}
+      {selectedCourseId && (
+        <>
+          <h4 className="sidebar-subtitle">Sections</h4>
+          <ul className="sidebar-list">
+            {sections.map(section => (
+              <li
+                key={section.id}
+                onClick={() => onSelectSection(section.id)}
+              >
+                Section {section.id}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      {/* Optional: Previous sessions */}
       {sessions.length > 0 && (
         <>
           <h4 className="sidebar-subtitle">Previous Sessions</h4>
           <ul className="sidebar-list">
-            {sessions.map((s) => (
+            {sessions.map(s => (
               <li
                 key={s.id}
                 onClick={() => onSelectSession?.(s.id)}
