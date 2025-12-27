@@ -121,7 +121,7 @@ export default function Chat({ sectionId, sessionId, onSessionUpdate }) {
     <div className="chat-container">
       <div className="chat-box">
         {messages.length === 0 && (
-          <p className="placeholder">Ask a question about this section</p>
+          <p className="placeholder"> Ask the AI tutor about this section’s content</p>
         )}
 
         {messages.map((msg, index) => (
