@@ -1,0 +1,28 @@
+.learning-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr 360px;
+  height: 100vh;
+  background-color: #0f172a; /* dark learning background */
+  color: #e5e7eb;
+}
+
+/* LEFT */
+.learning-sidebar {
+  border-right: 1px solid #1e293b;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+/* MIDDLE */
+.learning-content {
+  padding: 32px;
+  overflow-y: auto;
+  background-color: #020617;
+}
+
+/* RIGHT */
+.learning-assistant {
+  border-left: 1px solid #1e293b;
+  padding: 16px;
+  background-color: #020617;
+}

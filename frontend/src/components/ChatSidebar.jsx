@@ -3,55 +3,84 @@ import { useAuth } from "../context/AuthContext";
 import api from "../api/axiosInstance";
 import "./Chat.css";
 
-const ChatSidebar = ({ onSelectSession }) => {
+const COURSE_ID = 1; // Week 11: single course is enough
+
+const ChatSidebar = ({ onSelectSession, onSelectSection }) => {
   const { user } = useAuth();
-  useEffect(() => {
-      console.log("ChatSidebar mounted");
-    }, []);
+
+  const [sections, setSections] = useState([]);
   const [sessions, setSessions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
+  // Load sections for the course
   useEffect(() => {
-    if (!user) {
-      setLoading(false);
-        console.log("Fetching conversations...");
+    api
+      .get(`/courses/${COURSE_ID}/sections`)
+      .then((res) => {
+        if (Array.isArray(res.data)) {
+          setSections(res.data);
+        }
+      })
+      .catch((err) => {
+        console.warn("Failed to load sections (non-blocking)", err);
+      });
+  }, []);
 
-      return;
-    }
+  // Load previous chat sessions (optional)
+  useEffect(() => {
+    if (!user) return;
 
-    const fetchSessions = async () => {
-      try {
-        const res = await api.get("/conversations");
-        const data = Array.isArray(res.data) ? res.data : [];
-        setSessions(data);
-      } catch (err) {
-        console.error("Failed to load chat sessions:", err);
-        setError("Failed to load chat sessions");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSessions();
+    api
+      .get("/chat/conversations")
+      .then((res) => {
+        if (Array.isArray(res.data)) {
+          setSessions(res.data);
+        }
+      })
+      .catch((err) => {
+        console.warn("Chat history unavailable (non-blocking)", err);
+      });
   }, [user]);
-
-  if (loading) return <div className="sidebar">Loading chats...</div>;
-  if (error) return <div className="sidebar error">{error}</div>;
 
   return (
     <div className="sidebar">
-      <h3>Chat History</h3>
-      {sessions.length === 0 ? (
-        <p className="empty">No previous chats</p>
-      ) : (
-        <ul>
-          {sessions.map((s) => (
-            <li key={s.id} onClick={() => onSelectSession(s.id)}>
-              {s.title || "Untitled Chat"}
-            </li>
-          ))}
-        </ul>
+      {/* Course */}
+      <h3 className="sidebar-title">Course</h3>
+      <div className="sidebar-item active">
+        Java Basics
+      </div>
+
+      {/* Sections */}
+      <h4 className="sidebar-subtitle">Sections</h4>
+      <ul className="sidebar-list">
+        {sections.length === 0 && (
+          <li className="muted">No sections available</li>
+        )}
+
+        {sections.map((section) => (
+          <li
+            key={section.id}
+            onClick={() => onSelectSection(section.id)}
+          >
+            Section {section.id}
+          </li>
+        ))}
+      </ul>
+
+      {/* Previous Sessions (optional, non-blocking) */}
+      {sessions.length > 0 && (
+        <>
+          <h4 className="sidebar-subtitle">Previous Sessions</h4>
+          <ul className="sidebar-list">
+            {sessions.map((s) => (
+              <li
+                key={s.id}
+                onClick={() => onSelectSession?.(s.id)}
+              >
+                {s.title || "Untitled Session"}
+              </li>
+            ))}
+          </ul>
+        </>
       )}
     </div>
   );
