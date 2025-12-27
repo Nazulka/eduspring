@@ -14,13 +14,7 @@ REST is an **architectural style**.
 ## Key ideas
 - Stateless
 - Client–server
-- Uniform interface
-
-\`\`\`java
-@GetMapping("/users")
-public List<User> getUsers() {}
-\`\`\`
-        `}
+`}
       </ReactMarkdown>
     </div>
   );
