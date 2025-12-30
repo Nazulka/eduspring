@@ -5,9 +5,10 @@ import "./Chat.css";
 
 const ChatSidebar = ({
   selectedCourseId,
+  selectedSectionId,
   onSelectCourse,
   onSelectSection,
-  onSelectSession
+  onSelectSession,
 }) => {
   const { user } = useAuth();
 
@@ -15,82 +16,95 @@ const ChatSidebar = ({
   const [sections, setSections] = useState([]);
   const [sessions, setSessions] = useState([]);
 
-  /* Load all courses */
+  /* ------------------ Load courses ------------------ */
   useEffect(() => {
-    api.get("/courses")
-      .then(res => setCourses(res.data || []))
-      .catch(err => console.warn("Failed to load courses", err));
+    api
+      .get("/courses")
+      .then((res) => setCourses(res.data || []))
+      .catch((err) => console.warn("Failed to load courses", err));
   }, []);
 
-  /* Load sections when course changes */
+  /* ------------------ Load sections for selected course ------------------ */
   useEffect(() => {
     if (!selectedCourseId) {
       setSections([]);
       return;
     }
 
-    api.get(`/courses/${selectedCourseId}/sections`)
-      .then(res => setSections(res.data || []))
-      .catch(err => console.warn("Failed to load sections", err));
+    api
+      .get(`/courses/${selectedCourseId}/sections`)
+      .then((res) => setSections(res.data || []))
+      .catch((err) => console.warn("Failed to load sections", err));
   }, [selectedCourseId]);
 
-  /* Load chat history (optional) */
+  /* ------------------ Load chat history (optional, user-based) ------------------ */
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setSessions([]);
+      return;
+    }
 
-    api.get("/chat/conversations")
-      .then(res => setSessions(res.data || []))
+    api
+      .get("/chat/conversations")
+      .then((res) => setSessions(res.data || []))
       .catch(() => {});
   }, [user]);
 
   return (
     <div className="sidebar">
-      {/* Courses */}
-      <h3 className="sidebar-title">Courses</h3>
-      <ul className="sidebar-list">
-        {courses.map(course => (
-          <li
-            key={course.id}
-            className={course.id === selectedCourseId ? "active" : ""}
-            onClick={() => onSelectCourse(course.id)}
-          >
-            {course.title}
-          </li>
-        ))}
-      </ul>
+      {/* ================= Courses ================= */}
+      <div className="sidebar-block">
+        <h3 className="sidebar-title">Courses</h3>
+        <ul className="sidebar-list">
+          {courses.map((course) => (
+            <li
+              key={course.id}
+              className={course.id === selectedCourseId ? "active" : ""}
+              onClick={() => {
+                onSelectCourse(course.id);
+                onSelectSection(null); // reset section when course changes
+              }}
+            >
+              {course.title}
+            </li>
+          ))}
+        </ul>
+      </div>
 
-      {/* Sections */}
+      {/* ================= Sections ================= */}
       {selectedCourseId && (
-        <>
+        <div className="sidebar-block">
           <h4 className="sidebar-subtitle">Sections</h4>
           <ul className="sidebar-list">
-            {sections.map(section => (
-              <li
-                key={section.id}
-                onClick={() => onSelectSection(section.id)}
-              >
-                Section {section.id}
-              </li>
-            ))}
+            {sections.length === 0 ? (
+              <li className="empty">No sections</li>
+            ) : (
+              sections.map((section) => (
+                <li
+                  key={section.id}
+                  className={section.id === selectedSectionId ? "active" : ""}
+                  onClick={() => onSelectSection(section.id)}
+                >
+                  {section.title || `Section ${section.id}`}
+                </li>
+              ))
+            )}
           </ul>
-        </>
+        </div>
       )}
 
-      {/* Optional: Previous sessions */}
+      {/* ================= Previous Sessions ================= */}
       {sessions.length > 0 && (
-        <>
+        <div className="sidebar-block">
           <h4 className="sidebar-subtitle">Previous Sessions</h4>
           <ul className="sidebar-list">
-            {sessions.map(s => (
-              <li
-                key={s.id}
-                onClick={() => onSelectSession?.(s.id)}
-              >
+            {sessions.map((s) => (
+              <li key={s.id} onClick={() => onSelectSession(s.id)}>
                 {s.title || "Untitled Session"}
               </li>
             ))}
           </ul>
-        </>
+        </div>
       )}
     </div>
   );

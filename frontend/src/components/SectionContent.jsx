@@ -3,15 +3,12 @@ import ReactMarkdown from "react-markdown";
 import api from "../api/axiosInstance";
 import "./SectionContent.css";
 
-export default function SectionContent({ sectionId }) {
+export default function SectionContent({ courseId, sectionId }) {
   const [section, setSection] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // TEMP: using courseId = 1 until course selection UI is added
-  const COURSE_ID = 1;
-
   useEffect(() => {
-    if (!sectionId) {
+    if (!courseId || !sectionId) {
       setSection(null);
       return;
     }
@@ -19,21 +16,33 @@ export default function SectionContent({ sectionId }) {
     setLoading(true);
 
     api
-      .get(`/courses/${COURSE_ID}/sections`)
+      .get(`/courses/${courseId}/sections`)
       .then((res) => {
-        const found = res.data.find(
-          (s) => String(s.id) === String(sectionId)
-        );
-        setSection(found || null);
+        const sections = res.data || [];
+        const found = sections.find((s) => s.id === sectionId);
+
+        if (!found) {
+          throw new Error("Section not found in course");
+        }
+
+        setSection(found);
       })
       .catch((err) => {
         console.error("Failed to load section", err);
         setSection(null);
       })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [sectionId]);
+      .finally(() => setLoading(false));
+  }, [courseId, sectionId]);
+
+  /* ---------- Empty states ---------- */
+
+  if (!courseId) {
+    return (
+      <div className="section-content empty">
+        Select a course to begin
+      </div>
+    );
+  }
 
   if (!sectionId) {
     return (
@@ -58,6 +67,8 @@ export default function SectionContent({ sectionId }) {
       </div>
     );
   }
+
+  /* ---------- Render ---------- */
 
   return (
     <div className="section-content markdown">

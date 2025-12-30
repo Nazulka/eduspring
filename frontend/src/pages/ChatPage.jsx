@@ -11,18 +11,18 @@ export default function ChatPage() {
 
   return (
     <div className="learning-layout">
-      {/* Left: Courses + Sections */}
+      {/* Left: Courses + Sections + History */}
       <aside className="learning-sidebar">
         <ChatSidebar
           selectedCourseId={selectedCourseId}
           onSelectCourse={(courseId) => {
             setSelectedCourseId(courseId);
-            setSelectedSectionId(null);
-            setActiveSessionId(null);
+            setSelectedSectionId(null);   // reset section
+            setActiveSessionId(null);     // reset chat
           }}
           onSelectSection={(sectionId) => {
             setSelectedSectionId(sectionId);
-            setActiveSessionId(null);
+            setActiveSessionId(null);     // new section = new chat
           }}
           onSelectSession={setActiveSessionId}
         />
@@ -30,7 +30,10 @@ export default function ChatPage() {
 
       {/* Middle: Section content */}
       <main className="learning-content">
-        <SectionContent sectionId={selectedSectionId} />
+        <SectionContent
+          courseId={selectedCourseId}
+          sectionId={selectedSectionId}
+        />
       </main>
 
       {/* Right: AI tutor */}
