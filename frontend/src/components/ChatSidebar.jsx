@@ -96,7 +96,7 @@ const ChatSidebar = ({
       {/* ================= Previous Sessions ================= */}
       {sessions.length > 0 && (
         <div className="sidebar-block">
-          <h4 className="sidebar-subtitle">Previous Sessions</h4>
+          <h4 className="sidebar-subtitle">Previous Chats</h4>
           <ul className="sidebar-list">
             {sessions.map((s) => (
               <li key={s.id} onClick={() => onSelectSession(s.id)}>
