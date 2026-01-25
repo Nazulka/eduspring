@@ -1,15 +1,8 @@
-# ---------- Build stage ----------
-FROM eclipse-temurin:21-jdk AS build
+# ---------- Build stage (Gradle + Java 21 already installed) ----------
+FROM gradle:8.5-jdk21 AS build
 WORKDIR /app
-
-# Copy everything
 COPY . .
-
-# Make gradlew executable
-RUN chmod +x gradlew
-
-# Build using Gradle Wrapper
-RUN ./gradlew clean bootJar
+RUN ./gradlew --no-daemon clean bootJar -Dorg.gradle.java.installations.auto-download=false
 
 # ---------- Runtime stage ----------
 FROM eclipse-temurin:21-jre
