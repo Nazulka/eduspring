@@ -51,5 +51,6 @@ frontend/build/
 
 # Ignore config with secrets
 *.properties
+!gradle.properties
 /node_modules/
 
