@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import api from "../api";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -9,7 +10,7 @@ export default function Login() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const { login } = useAuth(); // ✅ get login function from AuthContext
+  const { login } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -21,10 +22,11 @@ export default function Login() {
   }, [location.state]);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -38,35 +40,33 @@ export default function Login() {
     }
 
     try {
-      const response = await fetch("http://localhost:8081/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const response = await api.post("/auth/login", formData);
+      const data = response.data;
 
-      const data = await response.json();
+      if (data?.token) {
+        // Update global auth state and persist token
+        login(data.token, data.user);
 
-      if (response.ok && data.token) {
-        // ✅ Update global auth state + save user and token
-        login(data.token, data.user); // from AuthContext
-
-        setMessage("Login successful!");
+        setMessage("Login successful.");
         setFormData({ username: "", password: "" });
 
-        // Redirect to chat
         navigate("/chat");
       } else {
-        setError(data.error || "Invalid credentials.");
+        setError("Invalid credentials.");
       }
     } catch (err) {
-      console.error("Login error:", err);
-      setError("Network error: could not reach server.");
+      if (err.response?.data) {
+        setError(err.response.data);
+      } else {
+        setError("Network error: could not reach server.");
+      }
     }
   };
 
   return (
     <div style={styles.container}>
       <h2 style={styles.header}>User Login</h2>
+
       <form onSubmit={handleSubmit} style={styles.form}>
         <input
           name="username"
@@ -104,8 +104,14 @@ const styles = {
     backgroundColor: "#f9f9f9",
     textAlign: "center",
   },
-  header: { marginBottom: "20px" },
-  form: { display: "flex", flexDirection: "column", gap: "10px" },
+  header: {
+    marginBottom: "20px",
+  },
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "10px",
+  },
   input: {
     padding: "10px",
     borderRadius: "5px",

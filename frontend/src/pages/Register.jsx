@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext"; // must return { isAuthenticated }
+import { useAuth } from "../context/AuthContext";
+import api from "../api"; // use shared Axios instance
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -13,15 +14,16 @@ export default function Register() {
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
 
-  // 🧹 Ensure user is logged out when accessing register page
+  // Ensure user is logged out when accessing register page
   useEffect(() => {
     localStorage.removeItem("token");
   }, []);
 
-  // 🚫 Redirect authenticated users trying to access /register manually
+  // Redirect authenticated users trying to access /register manually
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token && isAuthenticated) {
@@ -31,51 +33,46 @@ export default function Register() {
 
   // ✏️ Handle form field changes
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [name]: value,
     }));
   };
 
-  // 🚀 Handle form submission
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
     setError("");
 
-    // Basic validation
     const { username, password, email } = formData;
+
     if (!username || !password || !email) {
       setError("Username, password, and email are required.");
       return;
     }
 
     try {
-      const response = await fetch("http://localhost:8081/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+      await api.post("/auth/register", formData);
+
+      setMessage("Registration successful! Redirecting to login...");
+      setFormData({
+        username: "",
+        password: "",
+        firstName: "",
+        lastName: "",
+        email: "",
       });
 
-      const text = await response.text();
-
-      if (response.ok) {
-        setMessage(text || "Registration successful! Redirecting to login...");
-        setFormData({
-          username: "",
-          password: "",
-          firstName: "",
-          lastName: "",
-          email: "",
-        });
-
-        // ✅ Redirect to login after a short delay
-        setTimeout(() => navigate("/login"), 2000);
-      } else {
-        setError(text || "Something went wrong. Please try again.");
-      }
+      setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
-      setError("Network error: could not reach the server.");
+      // Better error handling
+      if (err.response?.data) {
+        setError(err.response.data);
+      } else {
+        setError("Network error: could not reach the server.");
+      }
     }
   };
 
@@ -107,60 +104,3 @@ export default function Register() {
           style={styles.input}
         />
         <input
-          name="lastName"
-          placeholder="Last Name"
-          value={formData.lastName}
-          onChange={handleChange}
-          style={styles.input}
-        />
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-          style={styles.input}
-        />
-        <button type="submit" style={styles.button}>
-          Register
-        </button>
-      </form>
-
-      {message && <p style={{ color: "green", marginTop: "10px" }}>{message}</p>}
-      {error && <p style={{ color: "red", marginTop: "10px" }}>{error}</p>}
-    </div>
-  );
-}
-
-const styles = {
-  container: {
-    maxWidth: "400px",
-    margin: "50px auto",
-    padding: "20px",
-    border: "1px solid #ccc",
-    borderRadius: "8px",
-    backgroundColor: "#f9f9f9",
-    textAlign: "center",
-  },
-  header: {
-    marginBottom: "20px",
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-  },
-  input: {
-    padding: "10px",
-    borderRadius: "5px",
-    border: "1px solid #ccc",
-  },
-  button: {
-    backgroundColor: "#007bff",
-    color: "white",
-    padding: "10px",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-  },
-};
