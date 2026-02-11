@@ -16,7 +16,6 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:3000") // allow React frontend
 public class AuthController {
 
     private final UserService userService;
