@@ -56,5 +56,5 @@ frontend/build/
 /node_modules/
 
 # Production / infra
-docker-compose.yml
+
 backups/
